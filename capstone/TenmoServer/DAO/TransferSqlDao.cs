@@ -14,13 +14,23 @@ namespace TenmoServer.DAO
     {
         private readonly string connectionString;
 
+        public int request = 1;
+        public int send = 2;
+
+        public int pending = 1;
+        public int approved = 2;
+        public int rejected = 3;
+
+
         public TransferSqlDao(string dbConnectionString)
         {
             connectionString = dbConnectionString;
         }
 
 
-
+        /*
+         *   ----------------------------READING------------------------------
+         */
         public Transfer GetTransaction(int transferId)  //Get a single transaction by ID
         {
             Transfer transfer = null;
@@ -103,23 +113,6 @@ namespace TenmoServer.DAO
             return transactionStatus;
         }
 
-        public Transfer SendTransactionToOtherUser(int userIdFrom, int userIdTo, decimal amountToTransfer) // use case 4 - this method probably needs to call smaller sub methods IMO
-        {
-            //create transaction
-            
-            //update one
-
-            //update other
-
-            throw new NotImplementedException();
-        }
-
-        public Transfer CreateNewTransfer(int userIdFrom, int userIdTo, decimal amountToTransfer)
-        {
-            throw new NotImplementedException();
-        }
-
-
         public Transfer CreateTransferFromReader(SqlDataReader sdr)
         {
             Transfer transfer = new Transfer
@@ -135,6 +128,82 @@ namespace TenmoServer.DAO
         }
 
 
+
+        /*
+         *   ----------------------------WRITING------------------------------
+         */
+
+
+        public Transfer SendTransactionToOtherUser(int accountIdFrom, int accountIdTo, decimal amountToTransfer) // use case 4 - this method probably needs to call smaller sub methods IMO
+        {
+            return CreateNewTransfer(accountIdFrom, accountIdTo, amountToTransfer, send, approved);  //transfer type send, transfer status approved (per README)
+
+        }
+        public Transfer RequestTransferFromOtherUser(int requestingAccountId, int SendingAccountId, decimal amountToTransfer) // use case 4 - this method probably needs to call smaller sub methods IMO
+        {
+            return CreateNewTransfer(requestingAccountId, SendingAccountId, amountToTransfer, request, pending);  //transfer type ID is 2 to send, transfer status is 2 (approved) for sends per README
+        }
+
+        public Transfer CreateNewTransfer(int accountIdFrom, int accountIdTo, decimal amountToTransfer, int transferType, int transferStatus)
+        {
+            int newTransferId;
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
+
+                    SqlCommand cmd = new SqlCommand("" +
+                        "INSERT INTO transfer (transfer_type_id, transfer_status_id, account_from, account_to, amount) " +
+                        "OUTPUT INSERTED.transfer_id " +
+                        "VALUES (transfer_type_id, transfer_status_id, @account_from, @account_to, @amount"
+                        , conn);
+                    cmd.Parameters.AddWithValue("transfer_type_id", transferType);
+                    cmd.Parameters.AddWithValue("transfer_status_id", transferStatus);
+                    cmd.Parameters.AddWithValue("@account_from", accountIdFrom);
+                    cmd.Parameters.AddWithValue("@account_to", accountIdTo);
+                    cmd.Parameters.AddWithValue("@amount", amountToTransfer);
+
+                    newTransferId = Convert.ToInt32(cmd.ExecuteScalar());
+                    return GetTransaction(newTransferId);
+                }
+            }
+            catch(Exception)
+            {
+                Console.WriteLine("Error creating new transfer");
+                return null;
+            }
+        }
+        
+
+        public void UpdateTransferStatus(int transferId, int newStatusId)
+        {
+            Transfer oldTransfer = GetTransaction(transferId);
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
+
+                    SqlCommand cmd = new SqlCommand("" +
+                        "Update transfer " +
+                        "SET transfer_type_id = @transfer_type_id, transfer_status_id = @transfer_status_id, account_from = @account_from, account_to = @account_to, amount = @amount) " +
+                        "WHERE transfer_id = @transfer_id"
+                        , conn);
+                    cmd.Parameters.AddWithValue("@transfer_type_id", oldTransfer.TransferTypeID);
+                    cmd.Parameters.AddWithValue("@transfer_status_id", newStatusId);
+                    cmd.Parameters.AddWithValue("@account_from", oldTransfer.AccountFrom);
+                    cmd.Parameters.AddWithValue("@account_to", oldTransfer.AccountTo);
+                    cmd.Parameters.AddWithValue("@amount", oldTransfer.Amount);
+
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Error updating transfer status");
+            }
+        }
 
     }
 }
