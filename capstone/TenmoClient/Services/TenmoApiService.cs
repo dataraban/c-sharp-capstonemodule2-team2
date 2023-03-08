@@ -1,4 +1,5 @@
 ﻿using RestSharp;
+using System;
 using System.Collections.Generic;
 using TenmoClient.Models;
 
@@ -20,6 +21,14 @@ namespace TenmoClient.Services
             return response.Data;
         }
 
+        //TO DO!
+        internal object GetPastTransfers()
+        {
+            RestRequest request = new RestRequest($"user/{UserId}/tr");
+            IRestResponse<decimal> response = client.Get<decimal>(request);
 
+            CheckForError(response);
+            return response.Data;
+        }
     }
 }
