@@ -1,5 +1,7 @@
-﻿using System;
+﻿using RestSharp;
+using System;
 using System.Collections.Generic;
+using System.Text;
 using TenmoClient.Models;
 
 namespace TenmoClient.Services
@@ -53,6 +55,10 @@ namespace TenmoClient.Services
 
         // Add application-specific UI methods here...
 
-
+        public void ViewBalance(decimal balance)
+        {
+            Console.WriteLine("");
+            Console.WriteLine($"Your current account balance is: {balance}:C2");
+        }
     }
 }
