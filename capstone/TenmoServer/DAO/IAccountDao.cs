@@ -6,7 +6,8 @@ namespace TenmoServer.DAO
     public interface IAccountDao
     {
         Account GetAccount(int accountId);
-        decimal ShowBalance(int accountId);
+        Account GetAccountByUser(int userId);
+        decimal AccountBalance(int accountId);
 
 
 
