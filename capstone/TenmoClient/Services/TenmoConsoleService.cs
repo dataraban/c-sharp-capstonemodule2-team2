@@ -57,8 +57,8 @@ namespace TenmoClient.Services
 
         public void ViewBalance(decimal balance)
         {
-            Console.WriteLine("");
-            Console.WriteLine($"Your current account balance is: {balance}:C2");
+            Console.WriteLine($"Your current account balance is: {balance:C2}");
+            //return $"Your current account balance is: {balance}:C2";
         }
     }
 }
