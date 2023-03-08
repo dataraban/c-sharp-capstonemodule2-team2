@@ -16,11 +16,11 @@ namespace TenmoServer.Controllers
             this.accountDao = accountDao;
         }
 
-        //[HttpGet]
-        //public ActionResult<Account> GetBalance() 
-        //{
-        //    //return accountDao.ShowBalance();
-        //}
+        [HttpGet]
+        public ActionResult<Account> GetBalance(int user_id)
+        {
+            return accountDao.GetAccountByUser(user_id);
+        }
 
     }
 }
