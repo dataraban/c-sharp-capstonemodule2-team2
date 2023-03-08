@@ -74,6 +74,9 @@ namespace TenmoClient
             if (menuSelection == 1)
             {
                 // View your current balance
+                Console.WriteLine("This should display the balance.");
+                console.ViewBalance(tenmoApiService.GetBalance());
+
 
             }
 
