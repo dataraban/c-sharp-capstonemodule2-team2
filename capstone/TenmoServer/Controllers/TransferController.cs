@@ -3,9 +3,14 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace TenmoServer.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class TransferController : ControllerBase
     {
+        //[HttpGet]
+
+
+        //[HttpGet("")]
+
     }
 }
