@@ -21,15 +21,30 @@ namespace TenmoClient.Services
             return response.Data;
         }
 
-        //TO DO!
-        internal List<Transfer> GetPastTransfers()
+        public List<Transfer> GetPastTransfers()
         {
             List<Transfer> transfers = new List<Transfer>();
-            //RestRequest request = new RestRequest($"user/{UserId}/tr");
-            //IRestResponse<decimal> response = client.Get<decimal>(request);
+            RestRequest request = new RestRequest($"transfer/{UserId}/pasttransfers");
+            IRestResponse<List<Transfer>> response = client.Get<List<Transfer>>(request);
 
-            //CheckForError(response);
+            CheckForError(response);
             return transfers;
+        }
+
+        public List<User> GetUsersForTransfers()
+        {
+            List<User> users = new List<User>();
+            RestRequest request = new RestRequest($"user");
+            IRestResponse<List<User>> response = client.Get<List<User>>(request);
+
+            CheckForError(response);
+            return RemoveCurrentUserFromList(response.Data);
+        }
+
+        private List<User> RemoveCurrentUserFromList(List<User> users)
+        {
+            users.RemoveAll(x => x.UserId == this.UserId);
+            return users;
         }
     }
 }
