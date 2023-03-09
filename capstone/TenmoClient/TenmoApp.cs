@@ -98,6 +98,24 @@ namespace TenmoClient
             if (menuSelection == 4)
             {
                 // Send TE bucks
+                List<User> usersForTransfers = tenmoApiService.GetUsersForTransfers();
+                console.DisplayUsers(usersForTransfers);
+                int userIdSelection = console.PromptForInteger("Id of the user you are sending to", 0, int.MaxValue);
+                bool isValidUserIdSelection = VerifyValidUserIdSelection(userIdSelection, usersForTransfers);
+                while (!isValidUserIdSelection)
+                {
+                    console.PrintError("Not a valid user Id. Please try again or press 0 to cancel.");
+                    userIdSelection = console.PromptForInteger("Id of the user you are sending to", 0, int.MaxValue);
+                    if (userIdSelection == 0)
+                    {
+                        RunAuthenticated();
+                    }
+                    isValidUserIdSelection = VerifyValidUserIdSelection(userIdSelection, usersForTransfers);
+                }
+                // do the transfer
+                Console.WriteLine("Transfer is valid. Do it here. TO DO!");
+                console.Pause();
+
             }
 
             if (menuSelection == 5)
@@ -113,6 +131,19 @@ namespace TenmoClient
             }
 
             return true;    // Keep the main menu loop going
+        }
+
+        private bool VerifyValidUserIdSelection(int userIdSelection, List<User> usersForTransfers)
+        {
+            bool isValidUserIdSelection = false;
+            foreach (User u in usersForTransfers)
+            {
+                if (u.UserId == userIdSelection)
+                {
+                    isValidUserIdSelection = true;
+                }
+            }
+            return isValidUserIdSelection;
         }
 
         private void Login()

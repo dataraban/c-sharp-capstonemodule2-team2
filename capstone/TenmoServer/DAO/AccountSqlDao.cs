@@ -87,7 +87,7 @@ namespace TenmoServer.DAO
 
             }
         }
-        int GetUserIdByAccountId(int accountId)
+        public int GetUserIdByAccountId(int accountId)
         {
             int userId = 0;
             try
@@ -112,7 +112,7 @@ namespace TenmoServer.DAO
             }
             return userId;
         }
-        string GetUsernameByAccountId(int accountId) 
+        public string GetUsernameByAccountId(int accountId) 
         {
             string username = "";
             try

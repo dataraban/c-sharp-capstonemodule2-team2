@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using TenmoServer.DAO;
 using TenmoServer.Models;
 
@@ -11,10 +13,12 @@ namespace TenmoServer.Controllers
     public class UserController : ControllerBase
     {
         private readonly IAccountDao accountDao;
+        private readonly IUserDao userDao;
 
-        public UserController(IAccountDao accountDao)
+        public UserController(IAccountDao accountDao, IUserDao userDao)
         {
             this.accountDao = accountDao;
+            this.userDao = userDao;
         }
 
         [HttpGet("{user_id}/balance")]
@@ -28,6 +32,18 @@ namespace TenmoServer.Controllers
         public ActionResult<decimal> GetUserInfo(int user_id)
         {
             throw new NotImplementedException();
+        }
+
+        [HttpGet]
+        public ActionResult<IList<User>> GetAllUsers()
+        {
+            IList<User> users = userDao.GetUsers();
+
+            if(users.Count == 0)
+            {
+                return NoContent(); 
+            }
+            return Ok(users);
         }
 
     }
