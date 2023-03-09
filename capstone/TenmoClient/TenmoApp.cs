@@ -74,64 +74,31 @@ namespace TenmoClient
             if (menuSelection == 1)
             {
                 // View your current balance
-                //Console.WriteLine("This should display the balance.");
-                //console.Pause();
-                console.ViewBalance(tenmoApiService.GetBalance());
-                console.Pause();
-
-
+                ViewBalance();
             }
 
             if (menuSelection == 2)
             {
                 // View your past transfers
-                console.ViewPastTransfers(tenmoApiService.GetPastTransfers());
-                //console.ViewPastTransfers()
-                console.Pause();
+                ViewPastTransfers();
             }
 
             if (menuSelection == 3)
             {
                 // View your pending requests
+                console.Pause("Feature Coming Soon....");
             }
 
             if (menuSelection == 4)
             {
                 // Send TE bucks
-
-                //get and validate user for transfer
-                List<User> usersForTransfers = tenmoApiService.GetUsersForTransfers();
-                console.DisplayUsers(usersForTransfers);
-                int userIdSelection = console.PromptForInteger("Id of the user you are sending to", 0, int.MaxValue);
-                bool isValidUserIdSelection = VerifyValidUserIdSelection(userIdSelection, usersForTransfers);
-                while (!isValidUserIdSelection)
-                {
-                    console.PrintError("Not a valid user Id. Please try again or press 0 to cancel.");
-                    userIdSelection = console.PromptForInteger("Id of the user you are sending to", 0, int.MaxValue);
-                    if (userIdSelection == 0)
-                    {
-                        RunAuthenticated();
-                    }
-                    isValidUserIdSelection = VerifyValidUserIdSelection(userIdSelection, usersForTransfers);
-                }
-
-                //get and validate amount to send             
-                decimal amountToSend = console.PromptForDecimal("Enter amount to send");
-                bool isValidAmountToSend = ValidateAmountToSend(amountToSend);
-                while (!isValidAmountToSend)
-                {                    
-                    amountToSend = console.PromptForDecimal("Enter amount to send");
-                    isValidAmountToSend = ValidateAmountToSend(amountToSend);
-                }
-
-                //complete transfer
-                console.Pause($"Sending {amountToSend:C2} to user {userIdSelection}...");
-
+                SendTEBucks();             
             }
 
             if (menuSelection == 5)
             {
                 // Request TE bucks
+                console.Pause("Feature Coming Soon....");
             }
 
             if (menuSelection == 6)
@@ -142,6 +109,60 @@ namespace TenmoClient
             }
 
             return true;    // Keep the main menu loop going
+        }
+
+        private void ViewBalance()
+        {
+            console.ViewBalance(tenmoApiService.GetBalance());
+            console.Pause();
+        }
+
+        private void ViewPastTransfers()
+        {
+            console.ViewPastTransfers(tenmoApiService.GetPastTransfers());
+            console.Pause();
+        }
+
+        private void SendTEBucks()
+        {
+            List<User> usersForTransfers = tenmoApiService.GetUsersForTransfers();
+            console.DisplayUsers(usersForTransfers);
+            int userIdSelection = console.PromptForInteger("Id of the user you are sending to", 0, int.MaxValue);
+            bool isValidUserIdSelection = VerifyValidUserIdSelection(userIdSelection, usersForTransfers);
+            while (!isValidUserIdSelection)
+            {
+                console.PrintError("Not a valid user Id. Please try again or press 0 to cancel.");
+                userIdSelection = console.PromptForInteger("Id of the user you are sending to", 0, int.MaxValue);
+                if (userIdSelection == 0)
+                {
+                    RunAuthenticated();
+                }
+                isValidUserIdSelection = VerifyValidUserIdSelection(userIdSelection, usersForTransfers);
+            }
+
+            //get and validate amount to send             
+            decimal amountToSend = console.PromptForDecimal("Enter amount to send");
+            bool isValidAmountToSend = ValidateAmountToSend(amountToSend);
+            while (!isValidAmountToSend)
+            {
+                amountToSend = console.PromptForDecimal("Enter amount to send");
+                isValidAmountToSend = ValidateAmountToSend(amountToSend);
+            }
+
+            //complete transfer
+            console.Pause($"Sending {amountToSend:C2} to user {userIdSelection}..." +
+                $"\nPress any key to continue...");
+            //DO SENDING
+            Transfer returnedTransfer = tenmoApiService.SendTransfer(amountToSend, userIdSelection);
+            if (returnedTransfer != null)
+            {
+                console.PrintSuccess($"Transfer ID {returnedTransfer.TransferId} is {returnedTransfer.TransferStatusID}. {returnedTransfer.Amount:C2} was transferred.");
+            }
+            else
+            {
+                console.PrintError("Transfer was unsuccessful. :(");
+            }
+            console.Pause();
         }
 
         private bool ValidateAmountToSend(decimal amountToSend)

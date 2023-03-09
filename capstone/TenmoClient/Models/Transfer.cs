@@ -30,5 +30,19 @@ namespace TenmoClient.Models
                 else return "Unknown";
             }
         }
+
+        public class SendTransfer
+        {
+            public int UserIdFrom { get; set; }
+            public int UserIdTo { get; set; }
+            public decimal AmountToSend { get; set; }
+
+            public SendTransfer(int userIdFrom, int userIdTo, decimal amountToSend)
+            {
+                UserIdFrom = userIdFrom;
+                UserIdTo = userIdTo;
+                AmountToSend = amountToSend;
+            }
+        }
     }
 }

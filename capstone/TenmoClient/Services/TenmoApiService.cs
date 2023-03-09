@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using TenmoClient.Models;
+using static TenmoClient.Models.Transfer;
 
 namespace TenmoClient.Services
 {
@@ -23,12 +24,12 @@ namespace TenmoClient.Services
 
         public List<Transfer> GetPastTransfers()
         {
-            List<Transfer> transfers = new List<Transfer>();
+            //List<Transfer> transfers = new List<Transfer>();
             RestRequest request = new RestRequest($"transfer/{UserId}/pasttransfers");
             IRestResponse<List<Transfer>> response = client.Get<List<Transfer>>(request);
 
             CheckForError(response);
-            return transfers;
+            return response.Data;
         }
 
         public List<User> GetUsersForTransfers()
@@ -41,7 +42,15 @@ namespace TenmoClient.Services
             return RemoveCurrentUserFromList(response.Data);
         }
 
-
+        public Transfer SendTransfer(decimal amountToSend, int userIdSelection)
+        {
+            SendTransfer newTransfer = new SendTransfer(UserId, userIdSelection, amountToSend);
+            RestRequest request = new RestRequest($"transfer/send");
+            request.AddJsonBody(newTransfer);
+            IRestResponse<Transfer> response = client.Post<Transfer>(request);
+            CheckForError(response);
+            return response.Data;
+        }
 
         private List<User> RemoveCurrentUserFromList(List<User> users)
         {
