@@ -28,6 +28,12 @@ namespace TenmoServer.Controllers
             return accountDao.AccountBalance(accountId);
         }
 
+        [HttpGet("{user_id}/account")]
+        public ActionResult<Account> GetAccountByUserId(int user_id)
+        {
+            return accountDao.GetAccountByUser(user_id);
+        }
+
         [HttpGet("{user_id}")]
         public ActionResult<decimal> GetUserInfo(int user_id)
         {

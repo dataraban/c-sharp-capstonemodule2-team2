@@ -11,4 +11,12 @@ namespace TenmoServer.Models
         public decimal Amount { get; set; }
 
     }
+
+    public class SendTransfer
+    {
+        public string UsernameFrom {get; set;}
+        public string UsernameTo { get; set; }
+        public decimal AmountToSend { get; set; }
+
+    }
 }

@@ -69,11 +69,12 @@ namespace TenmoServer.Controllers
          */
 
         [HttpPost("send")]
-        public ActionResult<Transfer> SendToOtherUser(string usernameFrom, string usernameTo, decimal amountToTransfer)
+        //[HttpPost()]
+        public ActionResult<Transfer> SendToOtherUser(SendTransfer sendTransfer)
         {
-            Account accountFrom = accountDao.GetAccountByUsername(usernameFrom);
-            Account accountTo = accountDao.GetAccountByUsername(usernameTo);
-            Transfer newTransfer = transferDao.SendTransactionToOtherUser(accountFrom, accountTo, amountToTransfer);
+            Account accountFrom = accountDao.GetAccountByUsername(sendTransfer.UsernameFrom);
+            Account accountTo = accountDao.GetAccountByUsername(sendTransfer.UsernameTo);
+            Transfer newTransfer = transferDao.SendTransactionToOtherUser(accountFrom, accountTo, sendTransfer.AmountToSend);
             return newTransfer;
         }
 

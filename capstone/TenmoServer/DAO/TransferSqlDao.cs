@@ -145,10 +145,10 @@ namespace TenmoServer.DAO
                     SqlCommand cmdCreateTransfer = new SqlCommand("" +
                         "INSERT INTO transfer (transfer_type_id, transfer_status_id, account_from, account_to, amount) " +
                         "OUTPUT INSERTED.transfer_id " +
-                        "VALUES (transfer_type_id, transfer_status_id, @account_from, @account_to, @amount"
+                        "VALUES (@transfer_type_id, @transfer_status_id, @account_from, @account_to, @amount);"
                         , conn, transaction);
-                    cmdCreateTransfer.Parameters.AddWithValue("transfer_type_id", send);
-                    cmdCreateTransfer.Parameters.AddWithValue("transfer_status_id", approved);
+                    cmdCreateTransfer.Parameters.AddWithValue("@transfer_type_id", send);
+                    cmdCreateTransfer.Parameters.AddWithValue("@transfer_status_id", approved);
                     cmdCreateTransfer.Parameters.AddWithValue("@account_from", accountFrom.AccountId);
                     cmdCreateTransfer.Parameters.AddWithValue("@account_to", accountTo.AccountId);
                     cmdCreateTransfer.Parameters.AddWithValue("@amount", amountToTransfer);
@@ -157,21 +157,21 @@ namespace TenmoServer.DAO
                     SqlCommand cmdUpdateSenderBalance = new SqlCommand("" +
                         "UPDATE account " +
                         "SET user_id = @userId, balance = @balance " +
-                        "WHERE account_id = @account_id"
+                        "WHERE account_id = @account_id;"
                         , conn, transaction);
                     cmdUpdateSenderBalance.Parameters.AddWithValue("@userId", accountFrom.UserId);
                     cmdUpdateSenderBalance.Parameters.AddWithValue("@balance", accountFrom.Balance - amountToTransfer);
-                    cmdUpdateSenderBalance.Parameters.AddWithValue("@account_from", accountFrom.AccountId);
+                    cmdUpdateSenderBalance.Parameters.AddWithValue("@account_id", accountFrom.AccountId);
                     cmdUpdateSenderBalance.ExecuteNonQuery();
 
                     SqlCommand cmdUpdateReceiverBalance = new SqlCommand("" +
                         "UPDATE account " +
                         "SET user_id = @userId, balance = @balance " +
-                        "WHERE account_id = @account_id"
+                        "WHERE account_id = @account_id;"
                         , conn, transaction);
                     cmdUpdateReceiverBalance.Parameters.AddWithValue("@userId", accountTo.UserId);
                     cmdUpdateReceiverBalance.Parameters.AddWithValue("@balance", accountTo.Balance + amountToTransfer);
-                    cmdUpdateReceiverBalance.Parameters.AddWithValue("@account_from", accountTo.AccountId);
+                    cmdUpdateReceiverBalance.Parameters.AddWithValue("@account_id", accountTo.AccountId);
                     cmdUpdateReceiverBalance.ExecuteNonQuery();
 
                     transaction.Commit();
