@@ -31,33 +31,8 @@ namespace TenmoServer.DAO
         /*
          *   ----------------------------READING------------------------------
          */
-        public Transfer GetTransaction(int transferId)  //Get a single transaction by ID
-        {
-            Transfer transfer = null;
-            try
-            {
-                using (SqlConnection conn = new SqlConnection(connectionString))
-                {
-                    conn.Open();
-                    SqlCommand cmd = new SqlCommand("SELECT * FROM transfer WHERE transfer_id = @transferId", conn);
-                    cmd.Parameters.AddWithValue("@transferId", transferId);
 
-                    SqlDataReader reader = cmd.ExecuteReader();
-                    if (reader.Read())
-                    {
-                        transfer = CreateTransferFromReader(reader);
-                    }
-                }
-            }
-            catch(Exception)
-            {
-                Console.WriteLine("Error getting transaction by transferId");
-            }
-            return transfer;
-        }
-
-
-        public IList<Transfer> GetAllTransactionsByUser(int userId)  // return a list of all the users transactions
+        public IList<Transfer> GetAllTransfersByUser(int userId)  // return a list of all the users transactions
         {
             IList<Transfer> transfers = new List<Transfer>();
             try
@@ -87,8 +62,32 @@ namespace TenmoServer.DAO
             return transfers;
         }
 
+        public Transfer GetTransferByTransferId(int transferId)  //Get a single transaction by ID
+        {
+            Transfer transfer = null;
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
+                    SqlCommand cmd = new SqlCommand("SELECT * FROM transfer WHERE transfer_id = @transferId", conn);
+                    cmd.Parameters.AddWithValue("@transferId", transferId);
 
-        public int? GetTransactionStatus(int transactionId)  //get the status of a transaction 
+                    SqlDataReader reader = cmd.ExecuteReader();
+                    if (reader.Read())
+                    {
+                        transfer = CreateTransferFromReader(reader);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Error getting transaction by transferId");
+            }
+            return transfer;
+        }
+
+        public int? GetTransferStatus(int transactionId)  //get the status of a transaction 
         {
             int? transactionStatus = null;
             try
@@ -165,7 +164,7 @@ namespace TenmoServer.DAO
                     cmd.Parameters.AddWithValue("@amount", amountToTransfer);
 
                     newTransferId = Convert.ToInt32(cmd.ExecuteScalar());
-                    return GetTransaction(newTransferId);
+                    return GetTransferByTransferId(newTransferId);
                 }
             }
             catch(Exception)
@@ -176,9 +175,14 @@ namespace TenmoServer.DAO
         }
         
 
-        public void UpdateTransferStatus(int transferId, int newStatusId)
+        public Transfer UpdateTransferStatus(int transferId, int newStatusId)
         {
-            Transfer oldTransfer = GetTransaction(transferId);
+            
+            Transfer oldTransfer = GetTransferByTransferId(transferId);
+            if (oldTransfer == null)
+            {
+                return null;
+            }
             try
             {
                 using (SqlConnection conn = new SqlConnection(connectionString))
@@ -203,6 +207,8 @@ namespace TenmoServer.DAO
             {
                 Console.WriteLine("Error updating transfer status");
             }
+
+            return GetTransferByTransferId(transferId);
         }
 
     }
