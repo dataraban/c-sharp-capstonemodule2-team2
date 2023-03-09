@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Data.SqlClient;
+using System.Transactions;
 using TenmoServer.Models;
 
 namespace TenmoServer.DAO
@@ -15,7 +16,7 @@ namespace TenmoServer.DAO
 
 
 
-        public Account GetAccount(int accountId)
+        public Account GetAccountByAccountId(int accountId)
         {
             Account account = null;
             using (SqlConnection conn = new SqlConnection(connectionString))
@@ -34,7 +35,6 @@ namespace TenmoServer.DAO
 
             }
         }
-
         public Account GetAccountByUser(int userId)
         {
             Account account = null;
@@ -54,6 +54,20 @@ namespace TenmoServer.DAO
 
             }
         }
+        
+        public Account CreateAccountFromReader(SqlDataReader reader)
+        {
+            Account account = new Account();
+            account.AccountId = Convert.ToInt32(reader["account_id"]);
+            account.UserId = Convert.ToInt32(reader["user_id"]);
+            account.Balance = Convert.ToDecimal(reader["balance"]);
+
+            return account;
+
+
+
+        }
+
         public decimal AccountBalance(int accountId)
         {
             Account account = null;
@@ -73,22 +87,58 @@ namespace TenmoServer.DAO
 
             }
         }
-
-
-
-        public Account CreateAccountFromReader(SqlDataReader reader)
+        int GetUserIdByAccountId(int accountId)
         {
-            Account account = new Account();
-            account.AccountId = Convert.ToInt32(reader["account_id"]);
-            account.UserId = Convert.ToInt32(reader["user_id"]);
-            account.Balance = Convert.ToDecimal(reader["balance"]);
+            int userId = 0;
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
+                    SqlCommand cmd = new SqlCommand("" +
+                        "SELECT user_id FROM account WHERE account_id = @accountId", conn);
+                    cmd.Parameters.AddWithValue("@accountId", accountId);
 
-            return account;
-
-
-
+                    SqlDataReader reader = cmd.ExecuteReader();
+                    if (reader.Read())
+                    {
+                        userId = Convert.ToInt32(reader["user_id"]);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Error getting User ID by Account ID");
+            }
+            return userId;
         }
+        string GetUsernameByAccountId(int accountId) 
+        {
+            string username = "";
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
+                    SqlCommand cmd = new SqlCommand("" +
+                        "SELECT username FROM account " +
+                        "JOIN tenmo_user ON tenmo_user.user_id = account.user_id " +
+                        "WHERE account_id = @accountId", conn);
+                    cmd.Parameters.AddWithValue("@accountId", accountId);
 
+                    SqlDataReader reader = cmd.ExecuteReader();
+                    if (reader.Read())
+                    {
+                        username = Convert.ToString(reader["username"]);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Error getting Username by Account ID");
+            }
+            return username;
+        }
 
 
 

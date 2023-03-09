@@ -5,13 +5,11 @@ namespace TenmoServer.DAO
 {
     public interface IAccountDao
     {
-        Account GetAccount(int accountId);
+        Account GetAccountByAccountId(int accountId);
         Account GetAccountByUser(int userId);
         decimal AccountBalance(int accountId);
 
-
-
-
-
+        int GetUserIdByAccountId(int accountId);
+        string GetUsernameByAccountId(int accountId);
     }
 }
