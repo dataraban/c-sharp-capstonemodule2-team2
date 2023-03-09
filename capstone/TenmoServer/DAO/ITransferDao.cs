@@ -14,9 +14,8 @@ namespace TenmoServer.DAO
         
         
         // WRITING
-        Transfer SendTransactionToOtherUser(int accountIdFrom, int accountIdTo, decimal amountToTransfer);
-        Transfer RequestTransferFromOtherUser(int requestingAccountId, int SendingAccountId, decimal amountToTransfer);
-        Transfer CreateNewTransfer(int accountIdFrom, int accountIdTo, decimal amountToTransfer, int transferType, int transferStatus);
+        Transfer SendTransactionToOtherUser(Account accountFrom, Account accountTo, decimal amountToTransfer);
+        Transfer RequestTransferFromOtherUser(Account requestingAccountId, Account SendingAccountId, decimal amountToTransfer);
         Transfer UpdateTransferStatus(int transferId, int newStatusId);
     }
 }

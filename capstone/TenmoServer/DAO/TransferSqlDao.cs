@@ -133,17 +133,7 @@ namespace TenmoServer.DAO
          */
 
 
-        public Transfer SendTransactionToOtherUser(int accountIdFrom, int accountIdTo, decimal amountToTransfer) // use case 4 - this method probably needs to call smaller sub methods IMO
-        {
-            return CreateNewTransfer(accountIdFrom, accountIdTo, amountToTransfer, send, approved);  //transfer type send, transfer status approved (per README)
-
-        }
-        public Transfer RequestTransferFromOtherUser(int requestingAccountId, int SendingAccountId, decimal amountToTransfer) // use case 4 - this method probably needs to call smaller sub methods IMO
-        {
-            return CreateNewTransfer(requestingAccountId, SendingAccountId, amountToTransfer, request, pending);  //transfer type ID is 2 to send, transfer status is 2 (approved) for sends per README
-        }
-
-        public Transfer CreateNewTransfer(int accountIdFrom, int accountIdTo, decimal amountToTransfer, int transferType, int transferStatus)
+        public Transfer SendTransactionToOtherUser(Account accountFrom, Account accountTo, decimal amountToTransfer) // use case 4 - this method probably needs to call smaller sub methods IMO
         {
             int newTransferId;
             try
@@ -151,28 +141,80 @@ namespace TenmoServer.DAO
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
                     conn.Open();
-
-                    SqlCommand cmd = new SqlCommand("" +
+                    SqlTransaction transaction = conn.BeginTransaction();
+                    SqlCommand cmdCreateTransfer = new SqlCommand("" +
                         "INSERT INTO transfer (transfer_type_id, transfer_status_id, account_from, account_to, amount) " +
                         "OUTPUT INSERTED.transfer_id " +
                         "VALUES (transfer_type_id, transfer_status_id, @account_from, @account_to, @amount"
-                        , conn);
-                    cmd.Parameters.AddWithValue("transfer_type_id", transferType);
-                    cmd.Parameters.AddWithValue("transfer_status_id", transferStatus);
-                    cmd.Parameters.AddWithValue("@account_from", accountIdFrom);
-                    cmd.Parameters.AddWithValue("@account_to", accountIdTo);
-                    cmd.Parameters.AddWithValue("@amount", amountToTransfer);
+                        , conn, transaction);
+                    cmdCreateTransfer.Parameters.AddWithValue("transfer_type_id", send);
+                    cmdCreateTransfer.Parameters.AddWithValue("transfer_status_id", approved);
+                    cmdCreateTransfer.Parameters.AddWithValue("@account_from", accountFrom.AccountId);
+                    cmdCreateTransfer.Parameters.AddWithValue("@account_to", accountTo.AccountId);
+                    cmdCreateTransfer.Parameters.AddWithValue("@amount", amountToTransfer);
+                    newTransferId = Convert.ToInt32(cmdCreateTransfer.ExecuteScalar());
 
-                    newTransferId = Convert.ToInt32(cmd.ExecuteScalar());
+                    SqlCommand cmdUpdateSenderBalance = new SqlCommand("" +
+                        "UPDATE account " +
+                        "SET user_id = @userId, balance = @balance " +
+                        "WHERE account_id = @account_id"
+                        , conn, transaction);
+                    cmdUpdateSenderBalance.Parameters.AddWithValue("@userId", accountFrom.UserId);
+                    cmdUpdateSenderBalance.Parameters.AddWithValue("@balance", accountFrom.Balance - amountToTransfer);
+                    cmdUpdateSenderBalance.Parameters.AddWithValue("@account_from", accountFrom.AccountId);
+                    cmdUpdateSenderBalance.ExecuteNonQuery();
+
+                    SqlCommand cmdUpdateReceiverBalance = new SqlCommand("" +
+                        "UPDATE account " +
+                        "SET user_id = @userId, balance = @balance " +
+                        "WHERE account_id = @account_id"
+                        , conn, transaction);
+                    cmdUpdateReceiverBalance.Parameters.AddWithValue("@userId", accountTo.UserId);
+                    cmdUpdateReceiverBalance.Parameters.AddWithValue("@balance", accountTo.Balance + amountToTransfer);
+                    cmdUpdateReceiverBalance.Parameters.AddWithValue("@account_from", accountTo.AccountId);
+                    cmdUpdateReceiverBalance.ExecuteNonQuery();
+
+                    transaction.Commit();
                     return GetTransferByTransferId(newTransferId);
                 }
             }
-            catch(Exception)
+            catch (Exception)
             {
                 Console.WriteLine("Error creating new transfer");
                 return null;
             }
+
         }
+        public Transfer RequestTransferFromOtherUser(Account requestingAccount, Account RequestedAccount, decimal amountToTransfer) // use case 4 - this method probably needs to call smaller sub methods IMO
+        {
+            int newTransferId;
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
+                    SqlTransaction transaction = conn.BeginTransaction();
+                    SqlCommand cmdCreateTransfer = new SqlCommand("" +
+                        "INSERT INTO transfer (transfer_type_id, transfer_status_id, account_from, account_to, amount) " +
+                        "OUTPUT INSERTED.transfer_id " +
+                        "VALUES (transfer_type_id, transfer_status_id, @account_from, @account_to, @amount"
+                        , conn, transaction);
+                    cmdCreateTransfer.Parameters.AddWithValue("transfer_type_id", request);
+                    cmdCreateTransfer.Parameters.AddWithValue("transfer_status_id", pending);
+                    cmdCreateTransfer.Parameters.AddWithValue("@account_from", requestingAccount.AccountId);
+                    cmdCreateTransfer.Parameters.AddWithValue("@account_to", RequestedAccount.AccountId);
+                    cmdCreateTransfer.Parameters.AddWithValue("@amount", amountToTransfer);
+                    newTransferId = Convert.ToInt32(cmdCreateTransfer.ExecuteScalar());
+                }
+            }
+            catch(Exception)
+            {
+                Console.WriteLine("Error creating Request Transfer");
+                return null;
+            }
+            return GetTransferByTransferId(newTransferId);
+        }
+
         
 
         public Transfer UpdateTransferStatus(int transferId, int newStatusId)

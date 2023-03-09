@@ -54,7 +54,35 @@ namespace TenmoServer.DAO
 
             }
         }
-        
+
+
+        public Account GetAccountByUsername(string username)
+        {
+            try
+            {
+                Account account = null;
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
+                    SqlCommand cmd = new SqlCommand("SELECT * FROM account WHERE username = @username;", conn);
+                    cmd.Parameters.AddWithValue("@username", username);
+
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    if (reader.Read())
+                    {
+                        account = CreateAccountFromReader(reader);
+                    }
+                    return account;
+
+                }
+            }
+            catch(Exception)
+            {
+                Console.WriteLine("Error getting account by username");
+                return null;
+            }
+        }
         public Account CreateAccountFromReader(SqlDataReader reader)
         {
             Account account = new Account();
@@ -87,7 +115,7 @@ namespace TenmoServer.DAO
 
             }
         }
-        int GetUserIdByAccountId(int accountId)
+        public int GetUserIdByAccountId(int accountId)
         {
             int userId = 0;
             try
@@ -112,7 +140,7 @@ namespace TenmoServer.DAO
             }
             return userId;
         }
-        string GetUsernameByAccountId(int accountId) 
+        public string GetUsernameByAccountId(int accountId) 
         {
             string username = "";
             try
