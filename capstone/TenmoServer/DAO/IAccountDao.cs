@@ -7,6 +7,7 @@ namespace TenmoServer.DAO
     {
         Account GetAccountByAccountId(int accountId);
         Account GetAccountByUser(int userId);
+        Account GetAccountByUsername(string username);
         decimal AccountBalance(int accountId);
 
         int GetUserIdByAccountId(int accountId);

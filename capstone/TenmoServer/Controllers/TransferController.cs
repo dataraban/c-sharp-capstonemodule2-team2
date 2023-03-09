@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TenmoServer.DAO;
@@ -68,8 +69,22 @@ namespace TenmoServer.Controllers
          */
 
         [HttpPost("send")]
+        public ActionResult<Transfer> SendToOtherUser(string usernameFrom, string usernameTo, decimal amountToTransfer)
+        {
+            Account accountFrom = accountDao.GetAccountByUsername(usernameFrom);
+            Account accountTo = accountDao.GetAccountByUsername(usernameTo);
+            Transfer newTransfer = transferDao.SendTransactionToOtherUser(accountFrom, accountTo, amountToTransfer);
+            return newTransfer;
+        }
 
-        //[HttpPost("request")]
+        [HttpPost("request")]
+        public ActionResult<Transfer> RequestFromOtherUser(string requestingUsername, string requestedUsername, decimal amountToTransfer)
+        {
+            Account accountFrom = accountDao.GetAccountByUsername(requestingUsername);
+            Account accountTo = accountDao.GetAccountByUsername(requestedUsername);
+            Transfer newTransfer = transferDao.RequestTransferFromOtherUser(accountFrom, accountTo, amountToTransfer);
+            return newTransfer;
+        }
 
         [HttpPut("{transferId}")]
         public ActionResult<Transfer> UpdatePendingApprovedOrRejected(int transferId, int newStatusCodeId)
