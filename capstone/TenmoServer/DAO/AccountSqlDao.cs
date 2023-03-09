@@ -64,7 +64,10 @@ namespace TenmoServer.DAO
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
                     conn.Open();
-                    SqlCommand cmd = new SqlCommand("SELECT * FROM account WHERE username = @username;", conn);
+                    SqlCommand cmd = new SqlCommand(
+                        "SELECT * FROM account " +
+                        "JOIN tenmo_user ON tenmo_user.user_id = account.user_id " +
+                        "WHERE username = @username;", conn);
                     cmd.Parameters.AddWithValue("@username", username);
 
                     SqlDataReader reader = cmd.ExecuteReader();
