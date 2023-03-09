@@ -85,6 +85,8 @@ namespace TenmoClient
             if (menuSelection == 2)
             {
                 // View your past transfers
+                console.ViewPastTransfers(tenmoApiService.GetPastTransfers());
+                console.Pause();
             }
 
             if (menuSelection == 3)
