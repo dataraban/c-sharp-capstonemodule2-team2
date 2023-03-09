@@ -14,9 +14,18 @@ namespace TenmoServer.Models
 
     public class SendTransfer
     {
-        public string UsernameFrom {get; set;}
-        public string UsernameTo { get; set; }
+        public int UserIdFrom {get; set;}
+        public int UserIdTo { get; set; }
         public decimal AmountToSend { get; set; }
+
+    }
+
+
+    public class ReceiveTransfer
+    {
+        public int RequestingUserId { get; set; }
+        public int RequestedUserId { get; set; }
+        public decimal AmountToRequest { get; set; }
 
     }
 }
