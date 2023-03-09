@@ -28,8 +28,8 @@ namespace TenmoServer.Controllers
         [HttpGet("{user_id}/pasttransfers")]
         public ActionResult<IList<Transfer>> GetPastTransfers(int user_id)
         {
-            int accountId = accountDao.GetAccountByUser(user_id).AccountId;
-            IList<Transfer> transfers = transferDao.GetAllTransfersByUser(accountId);
+            //int accountId = accountDao.GetAccountByUser(user_id).AccountId;
+            IList<Transfer> transfers = transferDao.GetAllTransfersByUser(user_id);
             if(transfers.Count == 0)
             {
                 return NoContent();
@@ -37,7 +37,7 @@ namespace TenmoServer.Controllers
             return Ok(transfers);
         }
 
-        [HttpGet("{transferId}")]
+        [HttpGet("status/{transferId}")]
         public ActionResult<string> TransactionStatus(int transferId)
         {
             int? status = transferDao.GetTransferStatus(transferId);
@@ -53,7 +53,7 @@ namespace TenmoServer.Controllers
             return NotFound("Could not retrieve transfer status");
         }
 
-        [HttpGet("status/{transferId}")]
+        [HttpGet("{transferId}")]
         public ActionResult<Transfer> GetByTransferId(int transferId)
         {
             Transfer result = transferDao.GetTransferByTransferId(transferId);
@@ -69,21 +69,20 @@ namespace TenmoServer.Controllers
          */
 
         [HttpPost("send")]
-        //[HttpPost()]
         public ActionResult<Transfer> SendToOtherUser(SendTransfer sendTransfer)
         {
-            Account accountFrom = accountDao.GetAccountByUsername(sendTransfer.UsernameFrom);
-            Account accountTo = accountDao.GetAccountByUsername(sendTransfer.UsernameTo);
+            Account accountFrom = accountDao.GetAccountByUser(sendTransfer.UserIdFrom);
+            Account accountTo = accountDao.GetAccountByUser(sendTransfer.UserIdTo);
             Transfer newTransfer = transferDao.SendTransactionToOtherUser(accountFrom, accountTo, sendTransfer.AmountToSend);
             return newTransfer;
         }
 
         [HttpPost("request")]
-        public ActionResult<Transfer> RequestFromOtherUser(string requestingUsername, string requestedUsername, decimal amountToTransfer)
+        public ActionResult<Transfer> RequestFromOtherUser(ReceiveTransfer receiveTransfer)
         {
-            Account accountFrom = accountDao.GetAccountByUsername(requestingUsername);
-            Account accountTo = accountDao.GetAccountByUsername(requestedUsername);
-            Transfer newTransfer = transferDao.RequestTransferFromOtherUser(accountFrom, accountTo, amountToTransfer);
+            Account accountFrom = accountDao.GetAccountByUser(receiveTransfer.RequestingUserId);
+            Account accountTo = accountDao.GetAccountByUser(receiveTransfer.RequestedUserId);
+            Transfer newTransfer = transferDao.RequestTransferFromOtherUser(accountFrom, accountTo, receiveTransfer.AmountToRequest);
             return newTransfer;
         }
 
