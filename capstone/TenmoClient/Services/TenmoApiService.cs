@@ -41,6 +41,8 @@ namespace TenmoClient.Services
             return RemoveCurrentUserFromList(response.Data);
         }
 
+
+
         private List<User> RemoveCurrentUserFromList(List<User> users)
         {
             users.RemoveAll(x => x.UserId == this.UserId);

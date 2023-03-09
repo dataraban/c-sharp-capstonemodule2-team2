@@ -98,6 +98,8 @@ namespace TenmoClient
             if (menuSelection == 4)
             {
                 // Send TE bucks
+
+                //get and validate user for transfer
                 List<User> usersForTransfers = tenmoApiService.GetUsersForTransfers();
                 console.DisplayUsers(usersForTransfers);
                 int userIdSelection = console.PromptForInteger("Id of the user you are sending to", 0, int.MaxValue);
@@ -112,9 +114,18 @@ namespace TenmoClient
                     }
                     isValidUserIdSelection = VerifyValidUserIdSelection(userIdSelection, usersForTransfers);
                 }
-                // do the transfer
-                Console.WriteLine("Transfer is valid. Do it here. TO DO!");
-                console.Pause();
+
+                //get and validate amount to send             
+                decimal amountToSend = console.PromptForDecimal("Enter amount to send");
+                bool isValidAmountToSend = ValidateAmountToSend(amountToSend);
+                while (!isValidAmountToSend)
+                {                    
+                    amountToSend = console.PromptForDecimal("Enter amount to send");
+                    isValidAmountToSend = ValidateAmountToSend(amountToSend);
+                }
+
+                //complete transfer
+                console.Pause($"Sending {amountToSend:C2} to user {userIdSelection}...");
 
             }
 
@@ -131,6 +142,25 @@ namespace TenmoClient
             }
 
             return true;    // Keep the main menu loop going
+        }
+
+        private bool ValidateAmountToSend(decimal amountToSend)
+        {
+            bool isValidAmountToSend = true;
+            if(amountToSend <= 0)
+            {
+                console.PrintError("Amount must be more than $0");
+                return false;
+            }
+
+            decimal balance = tenmoApiService.GetBalance();
+
+            if (amountToSend > balance)
+            {
+                console.PrintError($"Amount must be less than or equal to your balance of {balance:C2}.");
+                return false;
+            }
+            return isValidAmountToSend;
         }
 
         private bool VerifyValidUserIdSelection(int userIdSelection, List<User> usersForTransfers)
