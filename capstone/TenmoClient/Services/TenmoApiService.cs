@@ -22,13 +22,14 @@ namespace TenmoClient.Services
         }
 
         //TO DO!
-        internal object GetPastTransfers()
+        internal List<Transfer> GetPastTransfers()
         {
-            RestRequest request = new RestRequest($"user/{UserId}/tr");
-            IRestResponse<decimal> response = client.Get<decimal>(request);
+            List<Transfer> transfers = new List<Transfer>();
+            //RestRequest request = new RestRequest($"user/{UserId}/tr");
+            //IRestResponse<decimal> response = client.Get<decimal>(request);
 
-            CheckForError(response);
-            return response.Data;
+            //CheckForError(response);
+            return transfers;
         }
     }
 }

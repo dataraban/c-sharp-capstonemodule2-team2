@@ -86,6 +86,7 @@ namespace TenmoClient
             {
                 // View your past transfers
                 console.ViewPastTransfers(tenmoApiService.GetPastTransfers());
+                //console.ViewPastTransfers()
                 console.Pause();
             }
 
