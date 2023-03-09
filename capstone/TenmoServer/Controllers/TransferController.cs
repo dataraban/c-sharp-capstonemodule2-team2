@@ -28,8 +28,8 @@ namespace TenmoServer.Controllers
         [HttpGet("{user_id}/pasttransfers")]
         public ActionResult<IList<Transfer>> GetPastTransfers(int user_id)
         {
-            int accountId = accountDao.GetAccountByUser(user_id).AccountId;
-            IList<Transfer> transfers = transferDao.GetAllTransfersByUser(accountId);
+            //int accountId = accountDao.GetAccountByUser(user_id).AccountId;
+            IList<Transfer> transfers = transferDao.GetAllTransfersByUser(user_id);
             if(transfers.Count == 0)
             {
                 return NoContent();
