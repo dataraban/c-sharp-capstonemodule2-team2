@@ -22,11 +22,11 @@ namespace TenmoClient.Services
             return response.Data;
         }
 
-        public List<Transfer> GetPastTransfers()
+        public List<PastTransfer> GetPastTransfers()
         {
             //List<Transfer> transfers = new List<Transfer>();
             RestRequest request = new RestRequest($"transfer/{UserId}/pasttransfers");
-            IRestResponse<List<Transfer>> response = client.Get<List<Transfer>>(request);
+            IRestResponse<List<PastTransfer>> response = client.Get<List<PastTransfer>>(request);
 
             CheckForError(response);
             return response.Data;
@@ -47,6 +47,7 @@ namespace TenmoClient.Services
             SendTransfer newTransfer = new SendTransfer(UserId, userIdSelection, amountToSend);
             RestRequest request = new RestRequest($"transfer/send");
             request.AddJsonBody(newTransfer);
+            
             IRestResponse<Transfer> response = client.Post<Transfer>(request);
             CheckForError(response);
             return response.Data;
