@@ -34,23 +34,28 @@ namespace TenmoClient.Services
         public List<PastTransfer> GetPastTransfersWithUsernames()
         {
             List<Transfer> allPastTransfers = GetPastTransfers();
+            if(allPastTransfers == null)
+            {
+                return null;
+            }
             List<PastTransfer> pastTransfersWithUsernames = new List<PastTransfer>();
             foreach (Transfer transfer in allPastTransfers)
             {
                 PastTransfer transferWithUsername = new PastTransfer(transfer);
 
-                RestRequest request = new RestRequest($"user/{transfer.AccountFrom}/username");
-                IRestResponse<string> response = client.Get<string>(request);
-                CheckForError(response);
-                transferWithUsername.UsernameFrom = response.Data;
-
-                request = new RestRequest($"user/{transfer.AccountTo}/username");
-                response = client.Get<string>(request);
-                CheckForError(response);
-                transferWithUsername.UsernameTo = response.Data;
+                transferWithUsername.UsernameTo = GetUsernameFromAccount(transfer.AccountTo);
+                transferWithUsername.UsernameFrom = GetUsernameFromAccount(transfer.AccountFrom);
                 pastTransfersWithUsernames.Add(transferWithUsername);
             }
             return pastTransfersWithUsernames;
+        }
+
+        private string GetUsernameFromAccount(int account)
+        {
+            RestRequest request = new RestRequest($"user/{account}/username");
+            IRestResponse<string> response = client.Get<string>(request);
+            CheckForError(response);
+            return response.Data;
         }
 
         public List<User> GetUsersForTransfers()
