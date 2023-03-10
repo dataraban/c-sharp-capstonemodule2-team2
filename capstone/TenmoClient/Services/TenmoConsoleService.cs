@@ -60,7 +60,7 @@ namespace TenmoClient.Services
             Console.WriteLine($"Your current account balance is: {balance:C2}");
         }
 
-        public void ViewPastTransfers(List<Transfer> transfers)
+        public void ViewPastTransfers(List<PastTransfer> transfers)
         {
 
             Console.WriteLine($"-------------------------------------------------------");
@@ -68,7 +68,7 @@ namespace TenmoClient.Services
             Console.WriteLine("{0,-10} {1,-5} {2,25} {3,5}", "ID", "From/To", "", "Amount");
             Console.WriteLine($"-------------------------------------------------------");
             //Console.WriteLine("{0,-10} {1,-5} {2,20} {3,8} {4,1}", "TestID", "From:", "TestUsername", "$", "123.45");
-            foreach (Transfer t in transfers)
+            foreach (PastTransfer t in transfers)
             {
                 Console.WriteLine("{0,-10} {1,-5} {2,20} {3,8} {4,1}", t.TransferId, t.TransferTypeName + ":", t.UsernameToFrom, "$", t.Amount);
                 //Console.WriteLine(          "{0,5} {1,-5} {2,20} {3,8}", "TestID", "From:", "TestUsername", "$123.45");
