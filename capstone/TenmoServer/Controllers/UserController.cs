@@ -59,6 +59,12 @@ namespace TenmoServer.Controllers
             throw new NotImplementedException();
         }
 
+        [HttpGet("{account_id}/username")]
+        public ActionResult<string> GetUsernameFromAccount(int account_id)
+        {
+            return accountDao.GetUsernameByAccountId(account_id);
+        }
+
         [HttpGet]
         public ActionResult<IList<User>> GetAllUsers()
         {

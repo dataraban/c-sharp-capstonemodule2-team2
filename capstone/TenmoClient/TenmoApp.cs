@@ -119,7 +119,7 @@ namespace TenmoClient
 
         private void ViewPastTransfers()
         {
-            console.ViewPastTransfers(tenmoApiService.GetPastTransfers());
+            console.ViewPastTransfers(tenmoApiService.GetPastTransfersWithUsernames());
             console.Pause();
         }
 
