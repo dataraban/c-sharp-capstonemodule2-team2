@@ -11,7 +11,7 @@ namespace TenmoServer.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class TransferController : ControllerBase
     {
         private readonly ITransferDao transferDao;
@@ -27,10 +27,10 @@ namespace TenmoServer.Controllers
          *   ----------------------------READING------------------------------
          */
 
-        [HttpGet("{user_id}/pasttransfers")]
+        [HttpGet("{userId}/pasttransfers")]
         public ActionResult<IList<Transfer>> GetPastTransfers(int userId)
         {
-            VerifyLoggedInUserId(userId);
+            //VerifyLoggedInUserId(userId);
             IList<Transfer> transfers = transferDao.GetAllTransfersByUser(userId);
             if(transfers.Count == 0)
             {
