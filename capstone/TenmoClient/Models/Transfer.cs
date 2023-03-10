@@ -32,8 +32,8 @@ namespace TenmoClient.Models
     public class PastTransfer
     {
         public int TransferId { get; set; }
-        public int TransferTypeID { get; set; }
-        public int TransferStatusID { get; set; }
+        public int TransferTypeId { get; set; }
+        public int TransferStatusId { get; set; }
 
         public string UsernameTo { get; set; }
 
