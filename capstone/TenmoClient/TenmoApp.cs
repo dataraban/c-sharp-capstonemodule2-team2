@@ -156,7 +156,7 @@ namespace TenmoClient
             Transfer returnedTransfer = tenmoApiService.SendTransfer(amountToSend, userIdSelection);
             if (returnedTransfer != null)
             {
-                console.PrintSuccess($"Transfer ID {returnedTransfer.TransferId} status code is {returnedTransfer.TransferStatusID}. {returnedTransfer.Amount:C2} was transferred.");
+                console.PrintSuccess($"Transfer ID {returnedTransfer.TransferId} status code is {returnedTransfer.TransferStatusId}. {returnedTransfer.Amount:C2} was transferred.");
             }
             else
             {

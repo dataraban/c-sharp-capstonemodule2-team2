@@ -117,8 +117,8 @@ namespace TenmoServer.DAO
             Transfer transfer = new Transfer
             {
                 TransferId = Convert.ToInt32(sdr["transfer_id"]),
-                TransferTypeID = Convert.ToInt32(sdr["transfer_type_id"]),
-                TransferStatusID = Convert.ToInt32(sdr["transfer_status_id"]),
+                TransferTypeId = Convert.ToInt32(sdr["transfer_type_id"]),
+                TransferStatusId = Convert.ToInt32(sdr["transfer_status_id"]),
                 AccountFrom = Convert.ToInt32(sdr["account_from"]),
                 AccountTo = Convert.ToInt32(sdr["account_to"]),
                 Amount = Convert.ToDecimal(sdr["amount"])
@@ -235,7 +235,7 @@ namespace TenmoServer.DAO
                         "SET transfer_type_id = @transfer_type_id, transfer_status_id = @transfer_status_id, account_from = @account_from, account_to = @account_to, amount = @amount) " +
                         "WHERE transfer_id = @transfer_id"
                         , conn);
-                    cmd.Parameters.AddWithValue("@transfer_type_id", oldTransfer.TransferTypeID);
+                    cmd.Parameters.AddWithValue("@transfer_type_id", oldTransfer.TransferTypeId);
                     cmd.Parameters.AddWithValue("@transfer_status_id", newStatusId);
                     cmd.Parameters.AddWithValue("@account_from", oldTransfer.AccountFrom);
                     cmd.Parameters.AddWithValue("@account_to", oldTransfer.AccountTo);

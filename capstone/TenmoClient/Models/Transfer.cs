@@ -4,8 +4,8 @@ namespace TenmoClient.Models
     public class Transfer
     {
         public int TransferId { get; set; }
-        public int TransferTypeID { get; set; }
-        public int TransferStatusID { get; set; }
+        public int TransferTypeId { get; set; }
+        public int TransferStatusId { get; set; }
         public int AccountFrom { get; set; }
         public int AccountTo { get; set; }
         public decimal Amount { get; set; }
@@ -15,8 +15,8 @@ namespace TenmoClient.Models
         public string UsernameToFrom {
             get
             {
-                if (TransferTypeID == 1) return UsernameFrom;
-                else if (TransferTypeID == 2) return UsernameTo;
+                if (TransferTypeId == 1) return UsernameFrom;
+                else if (TransferTypeId == 2) return UsernameTo;
                 else return "Unknown";
             }
         }
@@ -25,8 +25,8 @@ namespace TenmoClient.Models
         {
             get
             {
-                if (TransferTypeID == 1) return "Request";
-                else if (TransferTypeID == 2) return "Send";
+                if (TransferTypeId == 1) return "Request";
+                else if (TransferTypeId == 2) return "Send";
                 else return "Unknown";
             }
         }
