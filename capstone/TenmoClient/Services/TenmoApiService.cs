@@ -24,12 +24,29 @@ namespace TenmoClient.Services
 
         public List<PastTransfer> GetPastTransfers()
         {
-            //List<Transfer> transfers = new List<Transfer>();
             RestRequest request = new RestRequest($"transfer/{UserId}/pasttransfers");
             IRestResponse<List<PastTransfer>> response = client.Get<List<PastTransfer>>(request);
 
             CheckForError(response);
             return response.Data;
+        }
+
+        public List<PastTransfer> GetPastTransfersWithUsernames()
+        {
+            List<PastTransfer> pastTransfers = GetPastTransfers();
+            foreach (PastTransfer pastTransfer in pastTransfers)
+            {
+                RestRequest request = new RestRequest($"user/{pastTransfer.AccountFrom}/username");
+                IRestResponse<string> response = client.Get<string>(request);
+                CheckForError(response);
+                pastTransfer.UsernameFrom = response.Data;
+
+                request = new RestRequest($"user/{pastTransfer.AccountTo}/username");
+                response = client.Get<string>(request);
+                CheckForError(response);
+                pastTransfer.UsernameTo = response.Data;
+            }
+            return pastTransfers;
         }
 
         public List<User> GetUsersForTransfers()
@@ -52,6 +69,8 @@ namespace TenmoClient.Services
             CheckForError(response);
             return response.Data;
         }
+
+
 
         private List<User> RemoveCurrentUserFromList(List<User> users)
         {
