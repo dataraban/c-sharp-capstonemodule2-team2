@@ -22,10 +22,10 @@ namespace TenmoClient.Services
             return response.Data;
         }
 
-        public List<PastTransfer> GetPastTransfers()
+        public List<Transfer> GetPastTransfers()
         {
             RestRequest request = new RestRequest($"transfer/{UserId}/pasttransfers");
-            IRestResponse<List<PastTransfer>> response = client.Get<List<PastTransfer>>(request);
+            IRestResponse<List<Transfer>> response = client.Get<List<Transfer>>(request);
 
             CheckForError(response);
             return response.Data;
@@ -33,20 +33,32 @@ namespace TenmoClient.Services
 
         public List<PastTransfer> GetPastTransfersWithUsernames()
         {
-            List<PastTransfer> pastTransfers = GetPastTransfers();
-            foreach (PastTransfer pastTransfer in pastTransfers)
+            List<Transfer> allPastTransfers = GetPastTransfers();
+            List<PastTransfer> pastTransfersWithUsernames = new List<PastTransfer>();
+            foreach (Transfer transfer in allPastTransfers)
             {
-                RestRequest request = new RestRequest($"user/{pastTransfer.AccountFrom}/username");
+                PastTransfer transferWithUsername = new PastTransfer 
+                {
+                    TransferId = transfer.TransferId,
+                    TransferTypeId = transfer.TransferTypeId,
+                    TransferStatusId = transfer.TransferStatusId,
+                    AccountFrom = transfer.AccountFrom,
+                    AccountTo = transfer.AccountTo,
+                    Amount = transfer.Amount
+                };
+
+                RestRequest request = new RestRequest($"user/{transfer.AccountFrom}/username");
                 IRestResponse<string> response = client.Get<string>(request);
                 CheckForError(response);
-                pastTransfer.UsernameFrom = response.Data;
+                transferWithUsername.UsernameFrom = response.Data;
 
-                request = new RestRequest($"user/{pastTransfer.AccountTo}/username");
+                request = new RestRequest($"user/{transfer.AccountTo}/username");
                 response = client.Get<string>(request);
                 CheckForError(response);
-                pastTransfer.UsernameTo = response.Data;
+                transferWithUsername.UsernameTo = response.Data;
+                pastTransfersWithUsernames.Add(transferWithUsername);
             }
-            return pastTransfers;
+            return pastTransfersWithUsernames;
         }
 
         public List<User> GetUsersForTransfers()
