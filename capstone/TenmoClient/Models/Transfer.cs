@@ -34,13 +34,11 @@ namespace TenmoClient.Models
         public int TransferId { get; set; }
         public int TransferTypeId { get; set; }
         public int TransferStatusId { get; set; }
-
+        public int AccountFrom { get; set; }
+        public int AccountTo { get; set; }
         public string UsernameTo { get; set; }
-
         public string UsernameFrom { get; set; }
-
         public decimal Amount { get; set; }
-
         public string UsernameToFrom
         {
             get
@@ -54,9 +52,26 @@ namespace TenmoClient.Models
         {
             get
             {
-                if (TransferTypeId == 1) return "Request";
-                else if (TransferTypeId == 2) return "Send";
+                if (TransferTypeId == 1) return "From";
+                else if (TransferTypeId == 2) return "To";
                 else return "Unknown";
+            }
+        }
+        public string TransferStatus
+        {
+            get
+            {
+                switch (TransferStatusId)
+                {
+                    case 1:
+                        return "Pending";
+                    case 2:
+                        return "Approved";
+                    case 3:
+                        return "Rejected";
+                    default:
+                        return "Unknown";
+                }
             }
         }
     }
