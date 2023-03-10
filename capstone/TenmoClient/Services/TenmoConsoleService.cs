@@ -65,13 +65,20 @@ namespace TenmoClient.Services
 
             Console.WriteLine($"-----------------------------------------------------------------------");
             Console.WriteLine("{0,-50}", "Transfers");
-            Console.WriteLine("{0,-6} {1,-20} {2,10} {3,8}", "ID", "From/To", "Amount", "Status");
+            Console.WriteLine("{0,-6} {1,-21} {2,10} {3,-10}", "ID", "From/To", "Amount", "Status");
             Console.WriteLine($"-----------------------------------------------------------------------");
-            //Console.WriteLine("{0,-10} {1,-5} {2,20} {3,8} {4,1}", "TestID", "From:", "TestUsername", "$", "123.45");
-            foreach (PastTransfer t in transfers)
+
+            if (transfers != null)
             {
-                Console.WriteLine("{0,-6} {1,-5} {2,-15} {3,10:C2} {4,-8} {5,-10}", t.TransferId, t.TransferTypeName + ":", t.UsernameToFrom, t.Amount, "Status: ", t.TransferStatus);
-                //Console.WriteLine(          "{0,5} {1,-5} {2,20} {3,8}", "TestID", "From:", "TestUsername", "$123.45");
+                foreach (PastTransfer t in transfers)
+                {
+                    Console.WriteLine("{0,-6} {1,-5} {2,-15} {3,10:C2} {4,-8} {5,-10}", t.TransferId, t.TransferTypeName + ":", t.UsernameToFrom, t.Amount, "Status: ", t.TransferStatus);
+                    //Console.WriteLine(          "{0,5} {1,-5} {2,20} {3,8}", "TestID", "From:", "TestUsername", "$123.45");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Unable to retrieve past transfers.");
             }
         }
 
