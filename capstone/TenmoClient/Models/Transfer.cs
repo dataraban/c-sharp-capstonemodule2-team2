@@ -45,8 +45,8 @@ namespace TenmoClient.Models
         {
             get
             {
-                if (TransferTypeID == 1) return UsernameFrom;
-                else if (TransferTypeID == 2) return UsernameTo;
+                if (TransferTypeId == 1) return UsernameFrom;
+                else if (TransferTypeId == 2) return UsernameTo;
                 else return "Unknown";
             }
         }
@@ -54,8 +54,8 @@ namespace TenmoClient.Models
         {
             get
             {
-                if (TransferTypeID == 1) return "From";
-                else if (TransferTypeID == 2) return "To";
+                if (TransferTypeId == 1) return "Request";
+                else if (TransferTypeId == 2) return "Send";
                 else return "Unknown";
             }
         }
