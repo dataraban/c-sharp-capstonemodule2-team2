@@ -53,7 +53,6 @@ namespace TenmoServer.Controllers
             }
         }
 
-        [Authorize(Roles = "admin")]
         [HttpGet("{user_id}")]
         public ActionResult<decimal> GetUserInfo(int user_id)
         {
@@ -67,9 +66,9 @@ namespace TenmoServer.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IList<User>> GetAllUsers()
+        public ActionResult<IList<UserAndId>> GetAllUsers()
         {
-            IList<User> users = userDao.GetUsers();
+            IList<UserAndId> users = userDao.GetUsersAndIds();
 
             if(users.Count == 0)
             {
@@ -78,6 +77,7 @@ namespace TenmoServer.Controllers
             return Ok(users);
         }
 
+       
         public bool VerifyLoggedInUserId(int userId)
         {
             int loggedInUser = Convert.ToInt32(User.FindFirst("sub")?.Value);
