@@ -37,15 +37,7 @@ namespace TenmoClient.Services
             List<PastTransfer> pastTransfersWithUsernames = new List<PastTransfer>();
             foreach (Transfer transfer in allPastTransfers)
             {
-                PastTransfer transferWithUsername = new PastTransfer 
-                {
-                    TransferId = transfer.TransferId,
-                    TransferTypeId = transfer.TransferTypeId,
-                    TransferStatusId = transfer.TransferStatusId,
-                    AccountFrom = transfer.AccountFrom,
-                    AccountTo = transfer.AccountTo,
-                    Amount = transfer.Amount
-                };
+                PastTransfer transferWithUsername = new PastTransfer(transfer);
 
                 RestRequest request = new RestRequest($"user/{transfer.AccountFrom}/username");
                 IRestResponse<string> response = client.Get<string>(request);

@@ -31,14 +31,9 @@ namespace TenmoClient.Models
 
     public class PastTransfer : Transfer
     {
-       // public int TransferId { get; set; }
-        //public int TransferTypeId { get; set; }
-       // public int TransferStatusId { get; set; }
-       // public int AccountFrom { get; set; }
-       // public int AccountTo { get; set; }
+       
         public string UsernameTo { get; set; }
         public string UsernameFrom { get; set; }
-       // public decimal Amount { get; set; }
         public string UsernameToFrom
         {
             get
@@ -57,23 +52,15 @@ namespace TenmoClient.Models
                 else return "Unknown";
             }
         }
-        //public string TransferStatus
-        //{
-        //    get
-        //    {
-        //        switch (TransferStatusId)
-        //        {
-        //            case 1:
-        //                return "Pending";
-        //            case 2:
-        //                return "Approved";
-        //            case 3:
-        //                return "Rejected";
-        //            default:
-        //                return "Unknown";
-        //        }
-        //    }
-       // }
+        public PastTransfer(Transfer transfer)
+        {
+            TransferId = transfer.TransferId;
+            TransferTypeId = transfer.TransferTypeId;
+            TransferStatusId = transfer.TransferStatusId;
+            AccountFrom = transfer.AccountFrom;
+            AccountTo = transfer.AccountTo;
+            Amount = transfer.Amount;
+        }
     }
 
 

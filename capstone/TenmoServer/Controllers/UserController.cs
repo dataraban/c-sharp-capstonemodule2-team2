@@ -49,10 +49,11 @@ namespace TenmoServer.Controllers
                 {
                     return NotFound();
                 }
-                return returnAccount;
+                return Ok(returnAccount);
             }
         }
 
+        [Authorize(Roles = "admin")]
         [HttpGet("{user_id}")]
         public ActionResult<decimal> GetUserInfo(int user_id)
         {
