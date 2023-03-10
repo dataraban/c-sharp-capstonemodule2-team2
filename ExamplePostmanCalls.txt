@@ -1,0 +1,45 @@
+LOGGING IN: (POST NOT GET, CAN GET TOKEN FROM HERE > auth "Bearer Token")
+https://localhost:44315/login
+{
+    "Username": "test",
+    "Password": "test"
+}
+
+
+
+GET ALL USERS:
+https://localhost:44315/user/
+
+
+GET USERS ACCOUNT BY ID:
+https://localhost:44315/user/1001/account
+
+
+SEE ALL PAST TRANSFERS FOR A USER:
+https://localhost:44315/transfer/1001/pasttransfers
+
+
+CHECK THE STATUS OF AN EXISTING TRANSFER
+https://localhost:44315/transfer/status/3003
+
+
+
+
+
+
+HOW TO POST A SEND TRANSFER:
+https://localhost:44315/transfer/send
+{
+    "UserIdFrom": 1002,
+    "UserIdTo": 1001,
+    "AmountToSend":250.00
+}
+
+
+HOW TO POST A REQUEST TRANSFER:
+https://localhost:44315/transfer/request
+{
+    "RequestingUserId": 1001,
+    "RequestedUserId": 1002,
+    "AmountToRequest":150.00
+}

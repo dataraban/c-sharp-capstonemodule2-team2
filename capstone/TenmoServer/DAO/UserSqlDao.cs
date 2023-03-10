@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using TenmoServer.Models;
@@ -72,6 +73,19 @@ namespace TenmoServer.DAO
 
             return returnUsers;
         }
+
+        public List<UserAndId> GetUsersAndIds()
+        {
+            List<User> users = GetUsers();
+            List<UserAndId> usersAndIds = new List<UserAndId>();
+            foreach(User user in users)
+            {
+                UserAndId userAndId = new UserAndId(user);
+                usersAndIds.Add(userAndId);
+            }
+            return usersAndIds;
+        }
+
 
         public User AddUser(string username, string password)
         {

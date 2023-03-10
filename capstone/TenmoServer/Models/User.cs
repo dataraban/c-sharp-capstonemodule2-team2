@@ -9,6 +9,18 @@
         public string Email { get; set; }
     }
 
+    public class UserAndId
+    {
+        public int UserId { get; set; }
+        public string Username { get; set; }
+
+        public UserAndId(User user)
+        {
+            UserId = user.UserId;
+            Username = user.Username;
+        }
+    }
+
     /// <summary>
     /// Model to return upon successful login
     /// </summary>
