@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TenmoServer.DAO;
 using TenmoServer.Models;
 using TenmoServer.Security;
@@ -7,6 +8,7 @@ namespace TenmoServer.Controllers
 {
     [Route("[controller]")]
     [ApiController]
+    [Authorize]
     public class LoginController : ControllerBase
     {
         private readonly ITokenGenerator tokenGenerator;
@@ -21,6 +23,7 @@ namespace TenmoServer.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public IActionResult Authenticate(LoginUser userParam)
         {
             // Default to bad username/password message
@@ -46,6 +49,7 @@ namespace TenmoServer.Controllers
         }
 
         [HttpPost("register")]
+        [AllowAnonymous]
         public IActionResult Register(LoginUser userParam)
         {
             IActionResult result;

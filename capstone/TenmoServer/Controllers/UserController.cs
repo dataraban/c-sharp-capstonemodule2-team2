@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net.Http;
 using TenmoServer.DAO;
 using TenmoServer.Models;
 
@@ -10,6 +12,7 @@ namespace TenmoServer.Controllers
 {
     [Route("[controller]")]
     [ApiController]
+    [Authorize]
     public class UserController : ControllerBase
     {
         private readonly IAccountDao accountDao;
@@ -24,6 +27,10 @@ namespace TenmoServer.Controllers
         [HttpGet("{user_id}/balance")]
         public ActionResult<decimal> GetBalance(int user_id)
         {
+            if (!VerifyLoggedInUserId(user_id))
+            {
+                return Forbid();
+            }
             int accountId = accountDao.GetAccountByUser(user_id).AccountId;
             return accountDao.AccountBalance(accountId);
         }
@@ -31,7 +38,19 @@ namespace TenmoServer.Controllers
         [HttpGet("{user_id}/account")]
         public ActionResult<Account> GetAccountByUserId(int user_id)
         {
-            return accountDao.GetAccountByUser(user_id);
+            if(!VerifyLoggedInUserId(user_id))
+            {
+                return Forbid();
+            }
+            else
+            {
+                Account returnAccount = accountDao.GetAccountByUser(user_id);
+                if(returnAccount == null)
+                {
+                    return NotFound();
+                }
+                return returnAccount;
+            }
         }
 
         [HttpGet("{user_id}")]
@@ -56,6 +75,17 @@ namespace TenmoServer.Controllers
                 return NoContent(); 
             }
             return Ok(users);
+        }
+
+        public bool VerifyLoggedInUserId(int userId)
+        {
+            int loggedInUser = Convert.ToInt32(User.FindFirst("sub")?.Value);
+            
+            if (userId != loggedInUser)
+            {
+                return false;
+            }
+            return true;
         }
 
     }

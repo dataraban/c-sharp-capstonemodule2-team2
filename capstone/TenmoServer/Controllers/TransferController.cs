@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections;
@@ -10,6 +11,7 @@ namespace TenmoServer.Controllers
 {
     [Route("[controller]")]
     [ApiController]
+    [Authorize]
     public class TransferController : ControllerBase
     {
         private readonly ITransferDao transferDao;
@@ -26,10 +28,10 @@ namespace TenmoServer.Controllers
          */
 
         [HttpGet("{user_id}/pasttransfers")]
-        public ActionResult<IList<Transfer>> GetPastTransfers(int user_id)
+        public ActionResult<IList<Transfer>> GetPastTransfers(int userId)
         {
-            //int accountId = accountDao.GetAccountByUser(user_id).AccountId;
-            IList<Transfer> transfers = transferDao.GetAllTransfersByUser(user_id);
+            VerifyLoggedInUserId(userId);
+            IList<Transfer> transfers = transferDao.GetAllTransfersByUser(userId);
             if(transfers.Count == 0)
             {
                 return NoContent();
@@ -95,6 +97,17 @@ namespace TenmoServer.Controllers
                 return NotFound(updatedTransfer);
             }
            return Ok(updatedTransfer);
+        }
+
+
+        public bool VerifyLoggedInUserId(int userId1, int userId2)
+        {
+            int loggedInUser = Convert.ToInt32(User.FindFirst("sub")?.Value);
+            if (userId1 != loggedInUser && userId2 != loggedInUser)
+            {
+                return false;
+            }
+            return true;
         }
     }
 }
