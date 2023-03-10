@@ -35,11 +35,11 @@ namespace TenmoClient.Models
         public int TransferTypeId { get; set; }
         public int TransferStatusId { get; set; }
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
         public int AccountFrom { get; set; }
         public int AccountTo { get; set; }
->>>>>>> 9a753864a724427e2e948f7c90edca459b968fab
         public string UsernameTo { get; set; }
         public string UsernameFrom { get; set; }
         public decimal Amount { get; set; }
