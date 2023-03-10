@@ -193,14 +193,13 @@ namespace TenmoServer.DAO
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
                     conn.Open();
-                    SqlTransaction transaction = conn.BeginTransaction();
                     SqlCommand cmdCreateTransfer = new SqlCommand("" +
                         "INSERT INTO transfer (transfer_type_id, transfer_status_id, account_from, account_to, amount) " +
                         "OUTPUT INSERTED.transfer_id " +
-                        "VALUES (transfer_type_id, transfer_status_id, @account_from, @account_to, @amount"
-                        , conn, transaction);
-                    cmdCreateTransfer.Parameters.AddWithValue("transfer_type_id", request);
-                    cmdCreateTransfer.Parameters.AddWithValue("transfer_status_id", pending);
+                        "VALUES (@transfer_type_id, @transfer_status_id, @account_from, @account_to, @amount)"
+                        , conn);
+                    cmdCreateTransfer.Parameters.AddWithValue("@transfer_type_id", request);
+                    cmdCreateTransfer.Parameters.AddWithValue("@transfer_status_id", pending);
                     cmdCreateTransfer.Parameters.AddWithValue("@account_from", requestingAccount.AccountId);
                     cmdCreateTransfer.Parameters.AddWithValue("@account_to", RequestedAccount.AccountId);
                     cmdCreateTransfer.Parameters.AddWithValue("@amount", amountToTransfer);
