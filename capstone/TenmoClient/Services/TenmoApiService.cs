@@ -124,16 +124,5 @@ namespace TenmoClient.Services
             CheckForError(response);
             return response.Data;
         }
-
-        public Transfer RequestTransfer(decimal amountToRequest, int userIdSelection)
-        {
-            ReceiveTransfer newTransfer = new ReceiveTransfer(UserId, userIdSelection, amountToRequest);
-            RestRequest request = new RestRequest($"transfer/request");
-            request.AddJsonBody(newTransfer);
-
-            IRestResponse<Transfer> response = client.Post<Transfer>(request);
-            CheckForError(response);
-            return response.Data;
-        }
     }
 }
