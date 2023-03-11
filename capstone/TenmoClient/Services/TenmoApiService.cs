@@ -31,7 +31,7 @@ namespace TenmoClient.Services
             return response.Data;
         }
 
-        public List<PastTransfer> GetPastTransfersWithUsernames()
+        public List<PastTransfer> GetPastTransfersWithUsernames(int transferTypeIdFilter = 0, int transferStatusIdFilter = 0)
         {
             List<Transfer> allPastTransfers = GetPastTransfers();
             if(allPastTransfers == null)
@@ -41,13 +41,33 @@ namespace TenmoClient.Services
             List<PastTransfer> pastTransfersWithUsernames = new List<PastTransfer>();
             foreach (Transfer transfer in allPastTransfers)
             {
+                if(transferTypeIdFilter != 0 && transferTypeIdFilter != transfer.TransferTypeId && transferStatusIdFilter != transfer.TransferStatusId)
+                {
+                    continue;
+                }
                 PastTransfer transferWithUsername = new PastTransfer(transfer);
 
                 transferWithUsername.UsernameTo = GetUsernameFromAccount(transfer.AccountTo);
                 transferWithUsername.UsernameFrom = GetUsernameFromAccount(transfer.AccountFrom);
+                transferWithUsername.SetToFrom(Username);
                 pastTransfersWithUsernames.Add(transferWithUsername);
             }
             return pastTransfersWithUsernames;
+        }
+
+        public PastTransfer GetPastTransferWithUsernames(int transferId)
+        {
+            Transfer transfer = GetTransferDetails(transferId);
+            if (transfer == null)
+            {
+                return null;
+            }
+            PastTransfer transferWithUsernames = new PastTransfer(transfer);
+
+            transferWithUsernames.UsernameTo = GetUsernameFromAccount(transfer.AccountTo);
+            transferWithUsernames.UsernameFrom = GetUsernameFromAccount(transfer.AccountFrom);
+            
+            return transferWithUsernames;
         }
 
         private string GetUsernameFromAccount(int account)
@@ -85,6 +105,26 @@ namespace TenmoClient.Services
         {
             users.RemoveAll(x => x.UserId == this.UserId);
             return users;
+        }
+
+        public Transfer GetTransferDetails(int transferId)
+        {
+            RestRequest request = new RestRequest($"transfer/{transferId}");
+            IRestResponse<Transfer> response = client.Get<Transfer>(request);
+
+            CheckForError(response);
+            return response.Data;
+        }
+
+        public Transfer RequestTransfer(decimal amountToRequest, int userIdSelection)
+        {
+            ReceiveTransfer newTransfer = new ReceiveTransfer(UserId, userIdSelection, amountToRequest);
+            RestRequest request = new RestRequest($"transfer/request");
+            request.AddJsonBody(newTransfer);
+
+            IRestResponse<Transfer> response = client.Post<Transfer>(request);
+            CheckForError(response);
+            return response.Data;
         }
     }
 }

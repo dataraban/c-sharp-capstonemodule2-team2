@@ -86,7 +86,7 @@ namespace TenmoClient
             if (menuSelection == 3)
             {
                 // View your pending requests
-                console.Pause("Feature Coming Soon....");
+                ViewPendingRequests();
             }
 
             if (menuSelection == 4)
@@ -98,7 +98,7 @@ namespace TenmoClient
             if (menuSelection == 5)
             {
                 // Request TE bucks
-                console.Pause("Feature Coming Soon....");
+                RequestTEBucks();
             }
 
             if (menuSelection == 6)
@@ -111,20 +111,94 @@ namespace TenmoClient
             return true;    // Keep the main menu loop going
         }
 
+
         private void ViewBalance()
         {
             console.ViewBalance(tenmoApiService.GetBalance());
             console.Pause();
         }
 
-        private void ViewPastTransfers()
+        private bool ViewPastTransfers()
         {
-            console.ViewPastTransfers(tenmoApiService.GetPastTransfersWithUsernames());
+            List<PastTransfer> pastTransfers = tenmoApiService.GetPastTransfersWithUsernames();
+            console.ViewPastTransfers(pastTransfers);
+            int pastTransferIdSelection = console.PromptForInteger("Please enter transfer ID to view details (0 to cancel)", 0, int.MaxValue);
+            if (pastTransferIdSelection == 0)
+            {
+                return false;
+            }
+            else
+            {
+                bool isValidPastTransferIdSelection = VerifyValidPastTransferSelection(pastTransferIdSelection, pastTransfers);
+                while (!isValidPastTransferIdSelection)
+                {
+                    console.PrintError("Not a valid transfer Id. Please try again or press 0 to cancel.");
+                    pastTransferIdSelection = console.PromptForInteger("Please enter transfer ID to view details (0 to cancel)", 0, int.MaxValue);
+                    if (pastTransferIdSelection == 0)
+                    {
+                        return false;
+                    }
+                    isValidPastTransferIdSelection = VerifyValidPastTransferSelection(pastTransferIdSelection, pastTransfers);
+                }
+                ViewTransferDetails(pastTransferIdSelection);
+                return true;
+            }            
+        }
+
+        private bool ViewPendingRequests()
+        {
+            List<PastTransfer> pastTransfers = tenmoApiService.GetPastTransfersWithUsernames(1,1
+                );
+            console.ViewPastTransfers(pastTransfers);
+            int pastTransferIdSelection = console.PromptForInteger("Please enter transfer ID to view details (0 to cancel)", 0, int.MaxValue);
+            if (pastTransferIdSelection == 0)
+            {
+                return false;
+            }
+            else
+            {
+                bool isValidPastTransferIdSelection = VerifyValidPastTransferSelection(pastTransferIdSelection, pastTransfers);
+                while (!isValidPastTransferIdSelection)
+                {
+                    console.PrintError("Not a valid transfer Id. Please try again or press 0 to cancel.");
+                    pastTransferIdSelection = console.PromptForInteger("Please enter transfer ID to view details (0 to cancel)", 0, int.MaxValue);
+                    if (pastTransferIdSelection == 0)
+                    {
+                        return false;
+                    }
+                    isValidPastTransferIdSelection = VerifyValidPastTransferSelection(pastTransferIdSelection, pastTransfers);
+                }
+                ViewTransferDetails(pastTransferIdSelection);
+                return true;
+            }
+        }
+
+        private void ViewTransferDetails(int pastTransferIdSelection)
+        {
+            console.ViewTransferDetails(tenmoApiService.GetPastTransferWithUsernames(pastTransferIdSelection));
             console.Pause();
         }
 
-        private void SendTEBucks()
+        private bool VerifyValidPastTransferSelection(int pastTransferIdSelection, List<PastTransfer> pastTransfers)
         {
+            if(pastTransfers == null)
+            {
+                return false;
+            }
+            foreach (Transfer t in pastTransfers)
+            {
+                if (t.TransferId == pastTransferIdSelection)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool SendTEBucks()
+        {
+            //bool wasSuccessfullySent = false;
+
             List<User> usersForTransfers = tenmoApiService.GetUsersForTransfers();
             console.DisplayUsers(usersForTransfers);
             int userIdSelection = console.PromptForInteger("Id of the user you are sending to", 0, int.MaxValue);
@@ -135,9 +209,17 @@ namespace TenmoClient
                 userIdSelection = console.PromptForInteger("Id of the user you are sending to", 0, int.MaxValue);
                 if (userIdSelection == 0)
                 {
-                    RunAuthenticated();
+                    //RunAuthenticated();
+                    return false;
                 }
                 isValidUserIdSelection = VerifyValidUserIdSelection(userIdSelection, usersForTransfers);
+            }
+                        
+            if (tenmoApiService.GetBalance() == 0)
+            {
+                console.PrintError("Your balance is $0.00. You cannot send any TEBucks.");
+                console.Pause();
+                return false;
             }
 
             //get and validate amount to send             
@@ -158,12 +240,61 @@ namespace TenmoClient
             {
                 console.PrintSuccess($"Transfer ID {returnedTransfer.TransferId} status code is {returnedTransfer.TransferStatus}. {returnedTransfer.Amount:C2} was transferred.");
                 ViewBalance();
+                return true;
             }
             else
             {
                 console.PrintError("Transfer was unsuccessful. :(");
+                console.Pause();
+                return false;
             }
-            console.Pause();
+            
+            //console.Pause();
+        }
+
+        private bool RequestTEBucks()
+        {
+            List<User> usersForTransfers = tenmoApiService.GetUsersForTransfers();
+            console.DisplayUsers(usersForTransfers);
+            int userIdSelection = console.PromptForInteger("Id of the user you are requesting from", 0, int.MaxValue);
+            bool isValidUserIdSelection = VerifyValidUserIdSelection(userIdSelection, usersForTransfers);
+            while (!isValidUserIdSelection)
+            {
+                console.PrintError("Not a valid user Id. Please try again or press 0 to cancel.");
+                userIdSelection = console.PromptForInteger("Id of the user you are requesting from", 0, int.MaxValue);
+                if (userIdSelection == 0)
+                {                    
+                    return false;
+                }
+                isValidUserIdSelection = VerifyValidUserIdSelection(userIdSelection, usersForTransfers);
+            }
+
+            //get and validate amount to request             
+            decimal amountToRequest = console.PromptForDecimal("Enter amount to request");
+
+            bool isValidAmountToRequest = ValidateAmountToRequest(amountToRequest);
+            while (!isValidAmountToRequest)
+            {
+                amountToRequest = console.PromptForDecimal("Enter amount to request");
+                isValidAmountToRequest = ValidateAmountToSend(amountToRequest);
+            }
+
+            //complete transfer
+            console.Pause($"Requesting {amountToRequest:C2} from user {userIdSelection}..." +
+                $"\nPress any key to continue...");
+            //DO SENDING
+            Transfer returnedTransfer = tenmoApiService.RequestTransfer(amountToRequest, userIdSelection);
+            if (returnedTransfer != null)
+            {
+                console.PrintSuccess($"Transfer ID {returnedTransfer.TransferId} status code is {returnedTransfer.TransferStatus}. {returnedTransfer.Amount:C2} was requested.");
+                return true;
+            }
+            else
+            {
+                console.PrintError("Request was unsuccessful. :(");
+                console.Pause();
+                return false;
+            }
         }
 
         private bool ValidateAmountToSend(decimal amountToSend)
@@ -185,6 +316,17 @@ namespace TenmoClient
             return isValidAmountToSend;
         }
 
+        private bool ValidateAmountToRequest(decimal amountToRequest)
+        {
+            bool isValidAmountToRequest = true;
+            if (amountToRequest <= 0)
+            {
+                console.PrintError("Amount must be more than $0");
+                return false;
+            }
+            return isValidAmountToRequest;
+        }
+
         private bool VerifyValidUserIdSelection(int userIdSelection, List<User> usersForTransfers)
         {
             bool isValidUserIdSelection = false;
@@ -193,6 +335,7 @@ namespace TenmoClient
                 if (u.UserId == userIdSelection)
                 {
                     isValidUserIdSelection = true;
+                    break;
                 }
             }
             return isValidUserIdSelection;
