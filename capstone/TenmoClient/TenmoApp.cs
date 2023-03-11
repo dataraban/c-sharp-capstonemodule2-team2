@@ -297,6 +297,53 @@ namespace TenmoClient
             }
         }
 
+
+        private void RequestTEBucks()
+        {
+            List<User> usersForTransfers = tenmoApiService.GetUsersForTransfers();
+            console.DisplayUsers(usersForTransfers);
+            int userIdSelection = console.PromptForInteger("Id of the user you are sending to", 0, int.MaxValue);
+            bool isValidUserIdSelection = VerifyValidUserIdSelection(userIdSelection, usersForTransfers);
+            while (!isValidUserIdSelection)
+            {
+                console.PrintError("Not a valid user Id. Please try again or press 0 to cancel.");
+                userIdSelection = console.PromptForInteger("Id of the user you are sending to", 0, int.MaxValue);
+                if (userIdSelection == 0)
+                {
+                    RunAuthenticated();
+                }
+                isValidUserIdSelection = VerifyValidUserIdSelection(userIdSelection, usersForTransfers);
+            }
+
+            //get and validate amount to request             
+            decimal amountToRequest = 0;
+            bool isValidAmountToRequest = false;
+            while (!isValidAmountToRequest)
+            {
+                amountToRequest = console.PromptForDecimal("Enter amount to request");
+                if(amountToRequest > 0M)
+                {
+                    isValidAmountToRequest = true;
+                }
+            }
+
+            //complete transfer
+            console.Pause($"Requesting {amountToRequest:C2} from user {userIdSelection}..." +
+                $"\nPress any key to continue...");
+            //DO REQUESTING
+            Transfer returnedTransfer = tenmoApiService.RequestTransfer(amountToRequest, userIdSelection);
+            if (returnedTransfer != null)
+            {
+                console.PrintSuccess($"Transfer ID {returnedTransfer.TransferId} status code is {returnedTransfer.TransferStatus}. {returnedTransfer.Amount:C2} was requested.");
+                ViewBalance();
+            }
+            else
+            {
+                console.PrintError("Transfer was unsuccessful. :(");
+            }
+            console.Pause();
+        }
+
         private bool ValidateAmountToSend(decimal amountToSend)
         {
             bool isValidAmountToSend = true;

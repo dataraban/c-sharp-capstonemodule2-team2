@@ -29,7 +29,7 @@ namespace TenmoServer.Models
     }
 
 
-    public class ReceiveTransfer
+    public class RequestTransfer
     {
         [Required(ErrorMessage = "UserID cannot be blank")]
         public int RequestingUserId { get; set; }
@@ -40,5 +40,11 @@ namespace TenmoServer.Models
         [Range(0, Double.PositiveInfinity, ErrorMessage = "Amount cannot be blank or less than $0")]
         public decimal AmountToRequest { get; set; }
 
+    }
+
+    public class UpdateTransfer
+    {
+        public int TransferId { get; set; }
+        public int NewStatusCodeId { get; set; }
     }
 }

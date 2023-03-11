@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Security.Cryptography.Xml;
 using System.Transactions;
@@ -132,8 +133,8 @@ namespace TenmoServer.DAO
          *   ----------------------------WRITING------------------------------
          */
 
-
-        public Transfer SendTransactionToOtherUser(Account accountFrom, Account accountTo, decimal amountToTransfer) // use case 4 - this method probably needs to call smaller sub methods IMO
+        //SQL CONNECTIONS AND TRANSACTIONS
+        public Transfer SendTransactionToOtherUser(Account accountFrom, Account accountTo, decimal amountToTransfer)
         {
             int newTransferId;
             try
@@ -142,37 +143,10 @@ namespace TenmoServer.DAO
                 {
                     conn.Open();
                     SqlTransaction transaction = conn.BeginTransaction();
-                    SqlCommand cmdCreateTransfer = new SqlCommand("" +
-                        "INSERT INTO transfer (transfer_type_id, transfer_status_id, account_from, account_to, amount) " +
-                        "OUTPUT INSERTED.transfer_id " +
-                        "VALUES (@transfer_type_id, @transfer_status_id, @account_from, @account_to, @amount);"
-                        , conn, transaction);
-                    cmdCreateTransfer.Parameters.AddWithValue("@transfer_type_id", send);
-                    cmdCreateTransfer.Parameters.AddWithValue("@transfer_status_id", approved);
-                    cmdCreateTransfer.Parameters.AddWithValue("@account_from", accountFrom.AccountId);
-                    cmdCreateTransfer.Parameters.AddWithValue("@account_to", accountTo.AccountId);
-                    cmdCreateTransfer.Parameters.AddWithValue("@amount", amountToTransfer);
-                    newTransferId = Convert.ToInt32(cmdCreateTransfer.ExecuteScalar());
 
-                    SqlCommand cmdUpdateSenderBalance = new SqlCommand("" +
-                        "UPDATE account " +
-                        "SET user_id = @userId, balance = @balance " +
-                        "WHERE account_id = @account_id;"
-                        , conn, transaction);
-                    cmdUpdateSenderBalance.Parameters.AddWithValue("@userId", accountFrom.UserId);
-                    cmdUpdateSenderBalance.Parameters.AddWithValue("@balance", accountFrom.Balance - amountToTransfer);
-                    cmdUpdateSenderBalance.Parameters.AddWithValue("@account_id", accountFrom.AccountId);
-                    cmdUpdateSenderBalance.ExecuteNonQuery();
-
-                    SqlCommand cmdUpdateReceiverBalance = new SqlCommand("" +
-                        "UPDATE account " +
-                        "SET user_id = @userId, balance = @balance " +
-                        "WHERE account_id = @account_id;"
-                        , conn, transaction);
-                    cmdUpdateReceiverBalance.Parameters.AddWithValue("@userId", accountTo.UserId);
-                    cmdUpdateReceiverBalance.Parameters.AddWithValue("@balance", accountTo.Balance + amountToTransfer);
-                    cmdUpdateReceiverBalance.Parameters.AddWithValue("@account_id", accountTo.AccountId);
-                    cmdUpdateReceiverBalance.ExecuteNonQuery();
+                    newTransferId = CreateTransaction(conn, transaction, send, approved, accountFrom.AccountId, accountTo.AccountId, amountToTransfer);
+                    UpdateBalance(conn, transaction, accountFrom.UserId, accountFrom.Balance - amountToTransfer, accountFrom.AccountId);
+                    UpdateBalance(conn, transaction, accountTo.UserId, accountTo.Balance + amountToTransfer, accountTo.AccountId);
 
                     transaction.Commit();
                     return GetTransferByTransferId(newTransferId);
@@ -185,7 +159,8 @@ namespace TenmoServer.DAO
             }
 
         }
-        public Transfer RequestTransferFromOtherUser(Account requestingAccount, Account RequestedAccount, decimal amountToTransfer) // use case 4 - this method probably needs to call smaller sub methods IMO
+
+        public Transfer RequestTransferFromOtherUser(Account requestingAccount, Account requestedAccount, decimal amountToTransfer)
         {
             int newTransferId;
             try
@@ -193,20 +168,12 @@ namespace TenmoServer.DAO
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
                     conn.Open();
-                    SqlCommand cmdCreateTransfer = new SqlCommand("" +
-                        "INSERT INTO transfer (transfer_type_id, transfer_status_id, account_from, account_to, amount) " +
-                        "OUTPUT INSERTED.transfer_id " +
-                        "VALUES (@transfer_type_id, @transfer_status_id, @account_from, @account_to, @amount)"
-                        , conn);
-                    cmdCreateTransfer.Parameters.AddWithValue("@transfer_type_id", request);
-                    cmdCreateTransfer.Parameters.AddWithValue("@transfer_status_id", pending);
-                    cmdCreateTransfer.Parameters.AddWithValue("@account_from", requestingAccount.AccountId);
-                    cmdCreateTransfer.Parameters.AddWithValue("@account_to", RequestedAccount.AccountId);
-                    cmdCreateTransfer.Parameters.AddWithValue("@amount", amountToTransfer);
-                    newTransferId = Convert.ToInt32(cmdCreateTransfer.ExecuteScalar());
+                    SqlTransaction transaction = conn.BeginTransaction();
+                    newTransferId = CreateTransaction(conn, transaction, request, pending, requestingAccount.AccountId, requestedAccount.AccountId, amountToTransfer);
+                    transaction.Commit();
                 }
             }
-            catch(Exception)
+            catch (Exception)
             {
                 Console.WriteLine("Error creating Request Transfer");
                 return null;
@@ -214,13 +181,11 @@ namespace TenmoServer.DAO
             return GetTransferByTransferId(newTransferId);
         }
 
-        
-
-        public Transfer UpdateTransferStatus(int transferId, int newStatusId)
+        public Transfer ApprovePendingRequest(Account requestingAccount, Account requestedAccount, int originalTransferId)
         {
-            
-            Transfer oldTransfer = GetTransferByTransferId(transferId);
-            if (oldTransfer == null)
+            int updatedTransferId;
+            Transfer originalTransfer = GetTransferByTransferId(originalTransferId);
+            if (originalTransfer == null)
             {
                 return null;
             }
@@ -229,27 +194,98 @@ namespace TenmoServer.DAO
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
                     conn.Open();
+                    SqlTransaction transaction = conn.BeginTransaction();
 
-                    SqlCommand cmd = new SqlCommand("" +
-                        "Update transfer " +
-                        "SET transfer_type_id = @transfer_type_id, transfer_status_id = @transfer_status_id, account_from = @account_from, account_to = @account_to, amount = @amount) " +
-                        "WHERE transfer_id = @transfer_id"
-                        , conn);
-                    cmd.Parameters.AddWithValue("@transfer_type_id", oldTransfer.TransferTypeId);
-                    cmd.Parameters.AddWithValue("@transfer_status_id", newStatusId);
-                    cmd.Parameters.AddWithValue("@account_from", oldTransfer.AccountFrom);
-                    cmd.Parameters.AddWithValue("@account_to", oldTransfer.AccountTo);
-                    cmd.Parameters.AddWithValue("@amount", oldTransfer.Amount);
+                    updatedTransferId = UpdateTransferStatus(conn, transaction, originalTransfer.TransferId, approved);
+                    UpdateBalance(conn, transaction, requestedAccount.UserId, requestedAccount.Balance - originalTransfer.Amount, requestedAccount.AccountId);
+                    UpdateBalance(conn, transaction, requestingAccount.UserId, requestingAccount.Balance + originalTransfer.Amount, requestingAccount.AccountId);
 
-                    cmd.ExecuteNonQuery();
+                    transaction.Commit();
+                    return GetTransferByTransferId(updatedTransferId);
                 }
             }
             catch (Exception)
             {
-                Console.WriteLine("Error updating transfer status");
+                Console.WriteLine("Error creating new transfer");
+                return null;
             }
+        }
 
-            return GetTransferByTransferId(transferId);
+        public Transfer DeclinePendingRequest(Account requestingAccount, Account requestedAccount, int originalTransferId)
+        {
+            int updatedTransferId;
+            Transfer originalTransfer = GetTransferByTransferId(originalTransferId);
+            if (originalTransfer == null)
+            {
+                return null;
+            }
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
+                    SqlTransaction transaction = conn.BeginTransaction();
+
+                    updatedTransferId = UpdateTransferStatus(conn, transaction, originalTransfer.TransferId, rejected);
+
+                    transaction.Commit();
+                    return GetTransferByTransferId(updatedTransferId);
+                }
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Error creating new transfer");
+                return null;
+            }
+        }
+       
+        // SQL COMMANDS
+        public int CreateTransaction(SqlConnection conn, SqlTransaction transaction, int transferType, int transferStatus, int accountFromId, int accountToId, decimal amountToTransfer)
+        {
+            SqlCommand cmdCreateTransfer = new SqlCommand("" +
+                        "INSERT INTO transfer (transfer_type_id, transfer_status_id, account_from, account_to, amount) " +
+                        "OUTPUT INSERTED.transfer_id " +
+                        "VALUES (@transfer_type_id, @transfer_status_id, @account_from, @account_to, @amount);"
+                        , conn, transaction);
+            cmdCreateTransfer.Parameters.AddWithValue("@transfer_type_id", transferType);
+            cmdCreateTransfer.Parameters.AddWithValue("@transfer_status_id", transferStatus);
+            cmdCreateTransfer.Parameters.AddWithValue("@account_from", accountFromId);
+            cmdCreateTransfer.Parameters.AddWithValue("@account_to", accountToId);
+            cmdCreateTransfer.Parameters.AddWithValue("@amount", amountToTransfer);
+            return Convert.ToInt32(cmdCreateTransfer.ExecuteScalar());
+        }
+
+        public void UpdateBalance(SqlConnection conn, SqlTransaction transaction, int userId, decimal newBalance, int accountId)
+        {
+            SqlCommand cmdUpdateSenderBalance = new SqlCommand("" +
+                        "UPDATE account " +
+                        "SET user_id = @userId, balance = @balance " +
+                        "WHERE account_id = @account_id;"
+                        , conn, transaction);
+            cmdUpdateSenderBalance.Parameters.AddWithValue("@userId", userId);
+            cmdUpdateSenderBalance.Parameters.AddWithValue("@balance", newBalance);
+            cmdUpdateSenderBalance.Parameters.AddWithValue("@account_id", accountId);
+            cmdUpdateSenderBalance.ExecuteNonQuery();
+        }
+        
+        public int UpdateTransferStatus(SqlConnection conn, SqlTransaction transaction, int transferId, int newStatusId)
+        {
+            
+            Transfer oldTransfer = GetTransferByTransferId(transferId);
+            SqlCommand cmd = new SqlCommand("" +
+                        "Update transfer " +
+                        "SET transfer_type_id = @transfer_type_id, transfer_status_id = @transfer_status_id, account_from = @account_from, account_to = @account_to, amount = @amount) " +
+                        "WHERE transfer_id = @transfer_id"
+                        , conn, transaction);
+            cmd.Parameters.AddWithValue("@transfer_type_id", oldTransfer.TransferTypeId);
+            cmd.Parameters.AddWithValue("@transfer_status_id", newStatusId);
+            cmd.Parameters.AddWithValue("@account_from", oldTransfer.AccountFrom);
+            cmd.Parameters.AddWithValue("@account_to", oldTransfer.AccountTo);
+            cmd.Parameters.AddWithValue("@amount", oldTransfer.Amount);
+
+            cmd.ExecuteNonQuery();
+
+            return transferId;
         }
 
     }

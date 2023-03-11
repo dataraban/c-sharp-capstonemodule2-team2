@@ -130,23 +130,36 @@ namespace TenmoClient.Models
         }
     }
 
-    public class ReceiveTransfer
+
+    public class RequestTransfer
     {
-        
         public int RequestingUserId { get; set; }
-        
+
         public int RequestedUserId { get; set; }
 
         public decimal AmountToRequest { get; set; }
 
-        public ReceiveTransfer(int requestingUserId, int requestedUserId, decimal amountToRequest)
+        public RequestTransfer(int requestingUserId, int requestedUserId, decimal amountToRequest)
         {
             RequestingUserId = requestingUserId;
             RequestedUserId = requestedUserId;
             AmountToRequest = amountToRequest;
         }
-        
+
     }
+
+    public class UpdateTransfer
+    {
+        public int TransferId { get; set; }
+        public int NewStatusCodeId { get; set; }
+        public UpdateTransfer(int transferId, int newStatusCodeId)
+        {
+            TransferId = transferId;
+            NewStatusCodeId = newStatusCodeId;
+        }
+    }
+
+
 
 }
 
