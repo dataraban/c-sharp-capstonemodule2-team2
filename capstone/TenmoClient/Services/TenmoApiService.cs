@@ -99,7 +99,7 @@ namespace TenmoClient.Services
             return response.Data;
         }
 
-        public Transfer RequestTransfer(decimal amountToRequest, int userIdSelection)
+        public Transfer RequestNewTransfer(decimal amountToRequest, int userIdSelection)
         {
             RequestTransfer newTransfer = new RequestTransfer(UserId, userIdSelection, amountToRequest);
             RestRequest request = new RestRequest($"transfer/request");
@@ -121,17 +121,6 @@ namespace TenmoClient.Services
             RestRequest request = new RestRequest($"transfer/{transferId}");
             IRestResponse<Transfer> response = client.Get<Transfer>(request);
 
-            CheckForError(response);
-            return response.Data;
-        }
-
-        public Transfer RequestTransfer(decimal amountToRequest, int userIdSelection)
-        {
-            ReceiveTransfer newTransfer = new ReceiveTransfer(UserId, userIdSelection, amountToRequest);
-            RestRequest request = new RestRequest($"transfer/request");
-            request.AddJsonBody(newTransfer);
-
-            IRestResponse<Transfer> response = client.Post<Transfer>(request);
             CheckForError(response);
             return response.Data;
         }
