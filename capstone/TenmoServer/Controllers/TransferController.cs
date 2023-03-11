@@ -16,6 +16,9 @@ namespace TenmoServer.Controllers
     {
         private readonly ITransferDao transferDao;
         private readonly IAccountDao accountDao;
+        public int pending = 1;
+        public int approved = 2;
+        public int rejected = 3;
 
         public TransferController(ITransferDao transferDao, IAccountDao accountDao)
         {
@@ -115,37 +118,50 @@ namespace TenmoServer.Controllers
         }
 
         [HttpPost("request")]
-        public ActionResult<Transfer> RequestFromOtherUser(ReceiveTransfer receiveTransfer)
+        public ActionResult<Transfer> RequestFromOtherUser(RequestTransfer requestTransfer)
         {
-            if (!VerifyLoggedInUserId(receiveTransfer.RequestingUserId))
+            if (!VerifyLoggedInUserId(requestTransfer.RequestingUserId))
             {
                 return Forbid();
             }
             else
             {
-                Account accountFrom = accountDao.GetAccountByUser(receiveTransfer.RequestingUserId);
-                Account accountTo = accountDao.GetAccountByUser(receiveTransfer.RequestedUserId);
-                Transfer newTransfer = transferDao.RequestTransferFromOtherUser(accountFrom, accountTo, receiveTransfer.AmountToRequest);
+                Account accountFrom = accountDao.GetAccountByUser(requestTransfer.RequestingUserId);
+                Account accountTo = accountDao.GetAccountByUser(requestTransfer.RequestedUserId);
+                Transfer newTransfer = transferDao.RequestTransferFromOtherUser(accountFrom, accountTo, requestTransfer.AmountToRequest);
                 return newTransfer;
             }
         }
 
         [HttpPut("{transferId}")]
-        public ActionResult<Transfer> UpdatePendingApprovedOrRejected(int transferId, int newStatusCodeId)
+        public ActionResult<Transfer> UpdatePendingToApprovedOrRejected(UpdateTransfer updateTransfer)
         {
-            Transfer inputTransfer = transferDao.GetTransferByTransferId(transferId);
+            Transfer inputTransfer = transferDao.GetTransferByTransferId(updateTransfer.TransferId);
+            Account accountFrom = accountDao.GetAccountByAccountId(inputTransfer.AccountFrom);
+            Account accountTo = accountDao.GetAccountByAccountId(inputTransfer.AccountTo);
+            Transfer updatedTransfer;
+
             if (inputTransfer == null)
             {
                 return NotFound(inputTransfer);
             }
-            else if (!VerifyLoggedInUserbyTransferId(transferId))
+            else if (!VerifyLoggedInUserbyTransferId(updateTransfer.TransferId))
             {
                 return Forbid();
             }
+            else if (updateTransfer.NewStatusCodeId == approved)
+            {
+                updatedTransfer = transferDao.ApprovePendingRequest(accountFrom, accountTo, inputTransfer.TransferId);
+                return updatedTransfer;
+            }
+            else if (updateTransfer.NewStatusCodeId == rejected)
+            {
+                updatedTransfer = transferDao.DeclinePendingRequest(accountFrom, accountTo, inputTransfer.TransferId);
+                return updatedTransfer;
+            }
             else
             {
-                Transfer updatedTransfer = transferDao.UpdateTransferStatus(transferId, newStatusCodeId);
-                return Ok(updatedTransfer);
+                return NotFound();
             }
         }
 

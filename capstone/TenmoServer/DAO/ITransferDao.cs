@@ -11,11 +11,16 @@ namespace TenmoServer.DAO
         Transfer GetTransferByTransferId(int transferId);
         int? GetTransferStatus(int transactionId);
         Transfer CreateTransferFromReader(SqlDataReader sdr);
-        
-        
-        // WRITING
+
+
+        //SQL CONNECTIONS AND TRANSACTIONS
         Transfer SendTransactionToOtherUser(Account accountFrom, Account accountTo, decimal amountToTransfer);
         Transfer RequestTransferFromOtherUser(Account requestingAccountId, Account SendingAccountId, decimal amountToTransfer);
-        Transfer UpdateTransferStatus(int transferId, int newStatusId);
+        Transfer ApprovePendingRequest(Account requestingAccount, Account requestedAccount, int originalTransferId);
+        Transfer DeclinePendingRequest(Account requestingAccount, Account requestedAccount, int originalTransferId);
+        // SQL COMMANDS
+        int CreateTransaction(SqlConnection conn, SqlTransaction transaction, int transferType, int transferStatus, int accountFromId, int accountToId, decimal amountToTransfer);
+        void UpdateBalance(SqlConnection conn, SqlTransaction transaction, int userId, decimal newBalance, int accountId);
+        int UpdateTransferStatus(SqlConnection conn, SqlTransaction transaction, int transferId, int newStatusId);
     }
 }
