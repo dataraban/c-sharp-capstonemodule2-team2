@@ -1,4 +1,7 @@
 ﻿
+using System.ComponentModel.DataAnnotations;
+using System;
+
 namespace TenmoClient.Models
 {
     public class Transfer
@@ -78,6 +81,37 @@ namespace TenmoClient.Models
             AmountToSend = amountToSend;
         }
     }
+
+
+    public class RequestTransfer
+    {
+        public int RequestingUserId { get; set; }
+
+        public int RequestedUserId { get; set; }
+
+        public decimal AmountToRequest { get; set; }
+
+        public RequestTransfer(int requestingUserId, int requestedUserId, decimal amountToRequest)
+        {
+            RequestingUserId = requestingUserId;
+            RequestedUserId = requestedUserId;
+            AmountToRequest = amountToRequest;
+        }
+
+    }
+
+    public class UpdateTransfer
+    {
+        public int TransferId { get; set; }
+        public int NewStatusCodeId { get; set; }
+        public UpdateTransfer(int transferId, int newStatusCodeId)
+        {
+            TransferId = transferId;
+            NewStatusCodeId = newStatusCodeId;
+        }
+    }
+
+
 
 }
 

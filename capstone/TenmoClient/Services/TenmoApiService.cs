@@ -79,7 +79,16 @@ namespace TenmoClient.Services
             return response.Data;
         }
 
+        public Transfer RequestTransfer(decimal amountToRequest, int userIdSelection)
+        {
+            RequestTransfer newTransfer = new RequestTransfer(UserId, userIdSelection, amountToRequest);
+            RestRequest request = new RestRequest($"transfer/request");
+            request.AddJsonBody(newTransfer);
 
+            IRestResponse<Transfer> response = client.Post<Transfer>(request);
+            CheckForError(response);
+            return response.Data;
+        }
 
         private List<User> RemoveCurrentUserFromList(List<User> users)
         {
