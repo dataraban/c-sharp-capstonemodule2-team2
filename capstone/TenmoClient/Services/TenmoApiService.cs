@@ -99,7 +99,7 @@ namespace TenmoClient.Services
             return response.Data;
         }
 
-        public Transfer RequestTransfer(decimal amountToRequest, int userIdSelection)
+        public Transfer RequestNewTransfer(decimal amountToRequest, int userIdSelection)
         {
             RequestTransfer newTransfer = new RequestTransfer(UserId, userIdSelection, amountToRequest);
             RestRequest request = new RestRequest($"transfer/request");

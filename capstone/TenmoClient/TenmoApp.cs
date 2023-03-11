@@ -283,7 +283,7 @@ namespace TenmoClient
             console.Pause($"Requesting {amountToRequest:C2} from user {userIdSelection}..." +
                 $"\nPress any key to continue...");
             //DO SENDING
-            Transfer returnedTransfer = tenmoApiService.RequestTransfer(amountToRequest, userIdSelection);
+            Transfer returnedTransfer = tenmoApiService.RequestNewTransfer(amountToRequest, userIdSelection);
             if (returnedTransfer != null)
             {
                 console.PrintSuccess($"Transfer ID {returnedTransfer.TransferId} status code is {returnedTransfer.TransferStatus}. {returnedTransfer.Amount:C2} was requested.");
@@ -296,8 +296,6 @@ namespace TenmoClient
                 return false;
             }
         }
-
-
 
         private bool ValidateAmountToSend(decimal amountToSend)
         {
